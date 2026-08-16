@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المنصة الأكاديمية والجغرافية الشاملة</title>
+    
+    <!-- Three.js & Globe.gl -->
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #080d1a;
+            --card-bg: rgba(15, 23, 42, 0.75);
+            --accent-gold: #d4af37;
+            --accent-blue: #38bdf8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-glow: rgba(56, 189, 248, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #080d1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-gold);
+        }
+
+        /* Header / Navbar */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(8, 13, 26, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 1rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            color: var(--accent-gold);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--accent-gold);
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+        }
+
+        /* Hero Section with 3D Globe */
+        .hero-section {
+            position: relative;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #globeViz {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .hero-overlay {
+            position: relative;
+            z-index: 2;
+            pointer-events: none;
+            padding: 0 5%;
+            max-width: 650px;
+            background: linear-gradient(90deg, rgba(8,13,26,0.95) 0%, rgba(8,13,26,0.6) 70%, rgba(8,13,26,0) 100%);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .hero-overlay * {
+            pointer-events: auto;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            width: fit-content;
+        }
+
+        .hero-title {
+            font-size: 2.8rem;
+            font-weight: 800;
+            line-height: 1.25;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            line-height: 1.8;
+            margin-bottom: 2rem;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-gold) 0%, #b89320 100%);
+            color: #000;
+            box-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(212, 175, 55, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(5px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent-blue);
+        }
+
+        /* Globe Hint Box */
+        .globe-hint {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translate(-50%, 0);}
+            40% {transform: translate(-50%, -8px);}
+            60% {transform: translate(-50%, -4px);}
+        }
+
+        /* Sections Layout */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 5rem 2rem;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: var(--accent-gold);
+            border-radius: 2px;
+        }
+
+        .section-desc {
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0.5rem auto 0;
+            font-size: 1rem;
+        }
+
+        /* Category Filter Tabs */
+        .filter-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+            padding: 8px 22px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active, .tab-btn:hover {
+            background: rgba(56, 189, 248, 0.15);
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        /* Cards Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent-blue);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(56, 189, 248, 0.2);
+        }
+
+        .card-img-wrapper {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+            opacity: 0.85;
+        }
+
+        .card:hover .card-img {
+            transform: scale(1.08);
+            opacity: 1;
+        }
+
+        .card-tag {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(8, 13, 26, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--accent-gold);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .card-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.8rem;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            line-height: 1.4;
+            margin-bottom: 0.8rem;
+            color: var(--text-main);
+        }
+
+        .card-text {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 1rem;
+            margin-top: auto;
+        }
+
+        .card-link {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: gap 0.2s ease;
+        }
+
+        .card-link:hover {
+            gap: 10px;
+            color: #fff;
+        }
+
+        /* Footer */
+        footer {
+            background: #030712;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 3rem 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-main);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .social-icon:hover {
+            background: var(--accent-gold);
+            color: #000;
+            transform: translateY(-3px);
+        }
+
+        /* Popup Custom Styling */
+        .scene-tooltip {
+            background: rgba(8, 13, 26, 0.95) !important;
+            border: 1px solid var(--accent-gold) !important;
+            border-radius: 12px !important;
+            padding: 12px 18px !important;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.8) !important;
+            backdrop-filter: blur(8px);
+        }
+
+        @media (max-width: 768px) {
+            .hero-title { font-size: 2rem; }
+            .hero-overlay { max-width: 100%; text-align: center; }
+            .hero-buttons { justify-content: center; }
+            .badge { margin: 0 auto 1.5rem; }
+            .nav-links { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <nav>
+        <div class="logo">
+            <i class="fa-solid =>-earth-africa"></i>
+            <span>د. محمود الإدريسي</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#home" class="active">الرئيسية</a></li>
+            <li><a href="#globe-section">الكرة التفاعلية</a></li>
+            <li><a href="#publications">الأبحاث والكتب</a></li>
+            <li><a href="#maps">الخرائط واللوحات</a></li>
+            <li><a href="#contact">التواصل</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section (Interactive 3D Globe) -->
+    <section class="hero-section" id="home">
+        <div id="globeViz"></div>
+        
+        <div class="hero-overlay">
+            <div class="badge">
+                <i class="fa-solid fa-compass"></i> المنصة الأكاديمية والجغرافية
+            </div>
+            <h1 class="hero-title">استكشاف أبحاث نظم المعلومات الجغرافية والخرائط</h1>
+            <p class="hero-subtitle">
+                مرحباً بكم في منصتي العلمية. تعرض هذه المنصة كافة أبحاثي المحكّمة، الأوراق العلمية، واللوحات الكارتوجرافية التفاعلية موزعة على مواقعها الجغرافية حول العالم.
+            </p>
+            <div class="hero-buttons">
+                <a href="#publications" class="btn btn-primary">
+                    <i class="fa-solid fa-book-bookmark"></i> استعراض الأبحاث
+                </a>
+                <a href="#maps" class="btn btn-secondary">
+                    <i class="fa-solid fa-map-location-dot"></i> الخرائط واللوحات
+                </a>
+            </div>
+        </div>
+
+        <div class="globe-hint">
+            <i class="fa-solid fa-hand-pointer"></i> يمكنك تدوير الكرة الأرضية والضغط على النقاط المضيئة لرؤية الأبحاث
+        </div>
+    </section>
+
+    <!-- Publications & Research Section -->
+    <section class="container" id="publications">
+        <div class="section-header">
+            <h2 class="section-title">الأبحاث والأوراق العلمية</h2>
+            <p class="section-desc">مجموعة الأبحاث والمؤلفات الأكاديمية المصنفة حسب مجالات الدراسة والنشر</p>
+        </div>
+
+        <div class="filter-tabs">
+            <button class="tab-btn active">الكل</button>
+            <button class="tab-btn">نظم المعلومات الجغرافية (GIS)</button>
+            <button class="tab-btn">الاستشعار عن بعد</button>
+            <button class="tab-btn">الكتب والمؤلفات</button>
+        </div>
+
+        <div class="grid">
+            <!-- Research Card 1 -->
+            <div class="card">
+                <div class="card-img-wrapper">
+                    <span class="card-tag">بحث محكّم</span>
+                    <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=800&q=80" alt="GIS Map" class="card-img">
+                </div>
+                <div class="card-body">
+                    <div class="card-meta">
+                        <span><i class="fa-regular fa-calendar"></i> 2025</span>
+                        <span><i class="fa-solid fa-location-dot"></i> القاهرة، مصر</span>
+                    </div>
+                    <h3 class="card-title">نمذجة الملاءمة المكانية لإنشاء السود في الأودية الجافة باستعمال ArcGIS Pro</h3>
+                    <p class="card-text">دراسة تحليلية تعتمد على النمذجة الهيدرولوجية والمعايير متعددة الأهداف لتحديد أفضل المواقع لحصاد مياه الأمطار.</p>
+                    <div class="card-footer">
+                        <a href="#" class="card-link">تحميل البحث (PDF) <i class="fa-solid fa-arrow-left"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Research Card 2 -->
+            <div class="card">
+                <div class="card-img-wrapper">
+                    <span class="card-tag">استشعار عن بعد</span>
+                    <img src="https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?auto=format&fit=crop&w=800&q=80" alt="Satellite" class="card-img">
+                </div>
+                <div class="card-body">
+                    <div class="card-meta">
+                        <span><i class="fa-regular fa-calendar"></i> 2026</span>
+                        <span><i class="fa-solid fa-location-dot"></i> الدلتا، مصر</span>
+                    </div>
+                    <h3 class="card-title">تصنيف المحاصيل الزراعية باستخدام بيانات Sentinel-1 و Google Earth Engine</h3>
+                    <p class="card-text">تطبيق تقنيات التعلم الآلي والرادار الراداري SAR لتحديد المحاصيل الصيفية والشتوية بدقة عالية.</p>
+                    <div class="card-footer">
+                        <a href="#" class="card-link">قراءة الملخص <i class="fa-solid fa-arrow-left"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Research Card 3 -->
+            <div class="card">
+                <div class="card-img-wrapper">
+                    <span class="card-tag">كتاب علمي</span>
+                    <img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=800&q=80" alt="Book" class="card-img">
+                </div>
+                <div class="card-body">
+                    <div class="card-meta">
+                        <span><i class="fa-regular fa-calendar"></i> 2024</span>
+                        <span><i class="fa-solid fa-book"></i> دار النشر الأكاديمية</span>
+                    </div>
+                    <h3 class="card-title">أسس التحليل الإحصائي المكاني وتطبيقاته الجغرافية</h3>
+                    <p class="card-text">مرجع شامل يتناول مؤشرات الاتجاه المركزي المكاني، نمط الجار أقرب، والارتباط الذاتي المكاني Moran's I.</p>
+                    <div class="card-footer">
+                        <a href="#" class="card-link">معلومات الكتاب <i class="fa-solid fa-arrow-left"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Maps & Panels Section -->
+    <section class="container" id="maps" style="padding-top: 0;">
+        <div class="section-header">
+            <h2 class="section-title">معرض الخرائط واللوحات الجغرافية</h2>
+            <p class="section-desc">خرائط عالية الدقة ولوحات كارتوجرافية مصممة للتحليلات الإقليمية</p>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-img-wrapper" style="height: 260px;">
+                    <img src="https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?auto=format&fit=crop&w=800&q=80" alt="Map Panel" class="card-img">
+                </div>
+                <div class="card-body">
+                    <h3 class="card-title">لوحة أشكال السطح والشبكة الهيدرولوجية لجنوب سيناء</h3>
+                    <p class="card-text">لوحة كارتوجرافية فاخرة تعكس شبكات الأودية وحوض التصريف الرئيسي بصيغة عالية الدقة.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-img-wrapper" style="height: 260px;">
+                    <img src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=800&q=80" alt="Map Panel" class="card-img">
+                </div>
+                <div class="card-body">
+                    <h3 class="card-title">خريطة التغير العمراني وشبكات الطرق</h3>
+                    <p class="card-text">تطور النمو العمراني باستخدام مؤشرات NDBI و NDVI عبر ثلاث عقود زمنية.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer & Contact -->
+    <footer id="contact">
+        <div class="social-links">
+            <a href="#" class="social-icon" title="Google Scholar"><i class="fa-solid fa-graduation-cap"></i></a>
+            <a href="#" class="social-icon" title="ORCID"><i class="fa-brands fa-orcid"></i></a>
+            <a href="#" class="social-icon" title="ResearchGate"><i class="fa-brands fa-researchgate"></i></a>
+            <a href="#" class="social-icon" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="#" class="social-icon" title="Email"><i class="fa-regular fa-envelope"></i></a>
+        </div>
+        <p>© 2026 جميع الحقوق محفوظة | المنصة الأكاديمية والجغرافية</p>
+    </footer>
+
+    <!-- Interactive Globe Script -->
+    <script>
+        // Sample Research & Map Data on Globe
+        const gData = [
+            { lat: 30.0444, lng: 31.2357, name: 'نمذجة مخرات السيول بأودية جافة', city: 'القاهرة - مصر', type: 'بحث هيدرولوجي', color: '#d4af37' },
+            { lat: 28.5306, lng: 33.9344, name: 'لوحة شبكات التصريف والنطاقات التضاريسية', city: 'جنوب سيناء', type: 'لوحة خرائطية', color: '#38bdf8' },
+            { lat: 31.2001, lng: 29.9187, name: 'تصنيف المحاصيل بالاستشعار عن بعد', city: 'دلتا النيل', type: 'بحث SAR', color: '#10b981' },
+            { lat: 24.0889, lng: 32.8998, name: 'تقدير مؤشرات الجفاف TVDI', city: 'أسوان', type: 'ورقة علمية', color: '#f59e0b' },
+            { lat: 35.6762, lng: 139.6503, name: 'مشاركة في مؤتمر GIS الدولي', city: 'طوكيو - اليابان', type: 'ورقة مؤتمر', color: '#ec4899' }
+        ];
+
+        // Initialize Globe.gl
+        const world = Globe()
+            (document.getElementById('globeViz'))
+            .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
+            .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
+            .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
+            .pointsData(gData)
+            .pointLat('lat')
+            .pointLng('lng')
+            .pointColor('color')
+            .pointAltitude(0.06)
+            .pointRadius(0.6)
+            .pointResolution(32)
+            .pointLabel(d => `
+                <div class="scene-tooltip">
+                    <strong style="color:#d4af37; font-size:1.1rem; display:block; margin-bottom:4px;">${d.name}</strong>
+                    <span style="color:#94a3b8; font-size:0.85rem;">📍 ${d.city} | <b style="color:#38bdf8;">${d.type}</b></span>
+                </div>
+            `)
+            .onPointClick(point => {
+                // Auto focus camera on clicked point
+                world.pointOfView({ lat: point.lat, lng: point.lng, altitude: 1.8 }, 1200);
+            });
+
+        // Atmosphere styling
+        world.atmosphereColor('#38bdf8')
+             .atmosphereAltitude(0.18);
+
+        // Auto-rotation setup
+        world.controls().autoRotate = true;
+        world.controls().autoRotateSpeed = 0.8;
+        world.controls().enableZoom = true;
+
+        // Set initial focal point (over the Nile Region / Middle East)
+        world.pointOfView({ lat: 26.0, lng: 30.0, altitude: 2.2 });
+
+        // Adjust Globe canvas on resize
+        window.addEventListener('resize', () => {
+            world.width(window.innerWidth).height(window.innerHeight);
+        });
+    </script>
+</body>
+</html>
