@@ -3,20 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المنصة الأكاديمية والجغرافية الشاملة | Mahmoud Tarek</title>
+    <title>المنصة الجغرافية والأكاديمية | Mahmoud Tarek</title>
 
-    <!-- Three.js & Globe.gl -->
+    <!-- Globe.gl & Three.js Libraries -->
     <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
     <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
-    
-    <!-- Chart.js for Automated Analytics -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- SheetJS for parsing Excel files -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,13 +19,13 @@
 
     <style>
         :root {
-            --bg-dark: #050811;
-            --card-bg: rgba(15, 23, 42, 0.8);
+            --bg-dark: #030712;
+            --card-bg: rgba(17, 24, 39, 0.85);
             --accent-gold: #d4af37;
             --accent-blue: #38bdf8;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-glow: rgba(56, 189, 248, 0.2);
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --border-color: rgba(255, 255, 255, 0.1);
         }
 
         * {
@@ -44,32 +39,27 @@
             background-color: var(--bg-dark);
             color: var(--text-main);
             overflow-x: hidden;
-            scroll-behavior: smooth;
+            height: 100vh;
         }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #050811; }
-        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent-gold); }
-
-        /* Navigation */
+        /* Top Navigation Bar */
         nav {
             position: fixed;
             top: 0;
             width: 100%;
+            height: 70px;
             z-index: 1000;
-            background: rgba(5, 8, 17, 0.9);
+            background: rgba(3, 7, 18, 0.95);
             backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 1rem 3rem;
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .logo {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: 800;
             color: var(--text-main);
             display: flex;
@@ -81,7 +71,7 @@
 
         .nav-links {
             display: flex;
-            gap: 1.8rem;
+            gap: 1.5rem;
             list-style: none;
         }
 
@@ -92,75 +82,76 @@
             transition: all 0.3s ease;
             font-size: 0.95rem;
             cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 8px;
         }
 
         .nav-links a:hover, .nav-links a.active {
             color: var(--accent-gold);
-            text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+            background: rgba(212, 175, 55, 0.1);
         }
 
-        /* Page Management (SPA Views) */
-        .page-section {
+        /* Page System (Independent Views) */
+        .page-view {
             display: none;
-            min-height: 100vh;
-            padding-top: 80px;
-            animation: fadeIn 0.5s ease-in-out;
+            height: calc(100vh - 70px);
+            margin-top: 70px;
+            overflow-y: auto;
+            animation: fadeIn 0.4s ease-in-out;
         }
 
-        .page-section.active {
+        .page-view.active {
             display: block;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Home Section & Galaxy Background */
-        #home-page {
-            position: relative;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem;
+        }
+
+        /* Section Titles */
+        .page-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+            text-align: center;
+        }
+
+        .page-subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+
+        /* HOME PAGE LOGIN CARD */
+        #home-view {
             background: radial-gradient(circle at center, #0b1426 0%, #02040a 100%), 
                         url('https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=1920&q=80');
             background-size: cover;
             background-position: center;
-            overflow: hidden;
-        }
-
-        .milky-way-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(5, 8, 17, 0.7);
-            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .login-card {
-            position: relative;
-            z-index: 2;
-            background: rgba(15, 23, 42, 0.85);
+            background: var(--card-bg);
             border: 1px solid rgba(212, 175, 55, 0.3);
             backdrop-filter: blur(16px);
-            padding: 2.5rem 3rem;
+            padding: 2.5rem;
             border-radius: 20px;
             width: 100%;
-            max-width: 460px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 20px rgba(212, 175, 55, 0.15);
+            max-width: 440px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
             text-align: center;
-        }
-
-        .login-card h2 {
-            font-size: 1.8rem;
-            margin-bottom: 0.5rem;
-            color: var(--text-main);
-        }
-
-        .login-card p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-bottom: 1.8rem;
         }
 
         .form-group {
@@ -178,8 +169,8 @@
         .form-control {
             width: 100%;
             padding: 12px 16px;
-            background: rgba(8, 13, 26, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(3, 7, 18, 0.8);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             color: #fff;
             outline: none;
@@ -188,10 +179,10 @@
 
         .form-control:focus {
             border-color: var(--accent-gold);
-            box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
         }
 
-        .btn-btn {
+        .btn {
             width: 100%;
             padding: 12px;
             border-radius: 8px;
@@ -199,7 +190,6 @@
             border: none;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-top: 0.5rem;
         }
 
         .btn-gold {
@@ -212,27 +202,13 @@
             box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
         }
 
-        .no-account-link {
-            display: inline-block;
-            margin-top: 1.2rem;
-            color: var(--accent-blue);
-            text-decoration: none;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-
-        .no-account-link:hover {
-            color: #fff;
-            text-decoration: underline;
-        }
-
-        /* 3D Globe Section */
-        #globe-page {
+        /* GLOBE VIEW */
+        #globe-view {
             position: relative;
-            height: calc(100vh - 80px);
+            height: calc(100vh - 70px);
             width: 100vw;
             overflow: hidden;
+            background: #000;
         }
 
         #globeViz {
@@ -240,474 +216,295 @@
             height: 100%;
         }
 
-        .globe-hint {
-            position: absolute;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-            background: rgba(15, 23, 42, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(8px);
-            padding: 10px 24px;
-            border-radius: 30px;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* Publications Section */
-        .container {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 3rem 2rem;
-        }
-
-        .section-header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .section-title {
-            font-size: 2.2rem;
-            font-weight: 800;
-            margin-bottom: 0.8rem;
-            position: relative;
-            display: inline-block;
-        }
-
-        .filter-tabs {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-bottom: 2.5rem;
-            flex-wrap: wrap;
-        }
-
-        .tab-btn {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            color: var(--text-muted);
-            padding: 8px 22px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .tab-btn.active, .tab-btn:hover {
-            background: rgba(56, 189, 248, 0.15);
-            border-color: var(--accent-blue);
-            color: var(--accent-blue);
-        }
-
-        /* Grid & Cards */
+        /* CARDS GRID (Books & Research) */
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
         }
 
         .card {
             background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.5rem;
             display: flex;
             flex-direction: column;
+            justify-content: space-between;
             transition: transform 0.3s ease;
         }
 
-        .card:hover { transform: translateY(-5px); border-color: var(--accent-blue); }
-
-        .card-img {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-gold);
         }
 
-        .card-body {
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
-
-        .card-title {
-            font-size: 1.15rem;
-            font-weight: 700;
-            margin-bottom: 0.8rem;
-        }
-
-        .card-text {
-            font-size: 0.88rem;
-            color: var(--text-muted);
-            line-height: 1.6;
-            margin-bottom: 1.2rem;
-        }
-
-        /* Dashboards & Upload Section */
-        .upload-box {
-            border: 2px dashed rgba(56, 189, 248, 0.4);
-            background: rgba(15, 23, 42, 0.5);
+        .upload-section {
+            background: rgba(17, 24, 39, 0.6);
+            border: 2px dashed rgba(212, 175, 55, 0.4);
             border-radius: 16px;
-            padding: 2.5rem;
+            padding: 2rem;
             text-align: center;
             margin-bottom: 2.5rem;
-            cursor: pointer;
+        }
+
+        /* CONTACT LINKS */
+        .contact-container {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .contact-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+            border-radius: 16px;
+            width: 180px;
+            text-align: center;
+            text-decoration: none;
+            color: var(--text-main);
             transition: all 0.3s ease;
         }
 
-        .upload-box:hover {
+        .contact-card:hover {
+            transform: translateY(-8px);
             border-color: var(--accent-gold);
-            background: rgba(15, 23, 42, 0.8);
         }
 
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
+        .contact-card i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
         }
 
-        .chart-card {
-            background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 1.5rem;
-        }
+        .linkedin-icon { color: #0a66c2; }
+        .whatsapp-icon { color: #25d366; }
+        .facebook-icon { color: #1877f2; }
 
-        .ai-box {
-            background: linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, rgba(56, 189, 248, 0.08) 100%);
-            border: 1px solid var(--accent-gold);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        footer {
-            background: #02040a;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 2rem;
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-        }
-
-        @media (max-width: 768px) {
-            .nav-links { display: none; }
-            .dashboard-grid { grid-template-columns: 1fr; }
-        }
     </style>
 </head>
 <body>
 
-    <!-- Header Navigation -->
+    <!-- TOP NAVIGATION BAR -->
     <nav>
         <div class="logo">
             <i class="fa-solid fa-earth-africa"></i>
-            <span> Mahmoud Tarek </span>
+            <span>Mahmoud Tarek</span>
         </div>
         <ul class="nav-links">
-            <li><a class="nav-item active" onclick="switchPage('home-page', this)"> الرئيسية (Home) </a></li>
-            <li><a class="nav-item" onclick="switchPage('globe-page', this)"> Geospatial Study Sites </a></li>
-            <li><a class="nav-item" onclick="switchPage('publications-page', this)"> الأبحاث والمؤلفات </a></li>
-            <li><a class="nav-item" onclick="switchPage('dashboards-page', this)"> الخرائط والـ Dashboards </a></li>
-            <li><a class="nav-item" onclick="switchPage('contact-page', this)"> التواصل </a></li>
+            <li><a class="nav-item active" onclick="switchTab('home-view', this)">Home</a></li>
+            <li><a class="nav-item" onclick="switchTab('globe-view', this)">Geospatial Study Sites</a></li>
+            <li><a class="nav-item" onclick="switchTab('research-view', this)">الأبحاث والمؤلفات</a></li>
+            <li><a class="nav-item" onclick="switchTab('books-view', this)">الكتب</a></li>
+            <li><a class="nav-item" id="data-nav-link" style="display: none;" onclick="switchTab('data-view', this)">Data</a></li>
+            <li><a class="nav-item" onclick="switchTab('contact-view', this)">التواصل</a></li>
         </ul>
     </nav>
 
-    <!-- SECTION 1: HOME PAGE (Galaxy & Login) -->
-    <section id="home-page" class="page-section active">
-        <div class="milky-way-overlay"></div>
+    <!-- 1. HOME VIEW (LOGIN) -->
+    <section id="home-view" class="page-view active">
         <div class="login-card">
             <div style="font-size: 2.5rem; color: var(--accent-gold); margin-bottom: 0.5rem;">
-                <i class="fa-solid fa-user-shield"></i>
+                <i class="fa-solid fa-user-lock"></i>
             </div>
-            <h2>منصة البيانات الجغرافية</h2>
-            <p>سجل الدخول للوصول إلى قاعدة البيانات (Shapefiles & GeoDatabase)</p>
+            <h2 style="margin-bottom: 0.5rem;">تسجيل الدخول</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">سجل الدخول للوصول الحصري لتبويب البيانات الجغرافية (Data)</p>
             
-            <form onsubmit="handleLogin(event)">
+            <form onsubmit="handleAuth(event)">
                 <div class="form-group">
-                    <label>اسم المستخدم</label>
-                    <input type="text" id="username" class="form-control" placeholder="أدخل اسم المستخدم" required>
+                    <label>البريد الإلكتروني / اسم المستخدم</label>
+                    <input type="email" id="auth-email" class="form-control" placeholder="Houda_Geosss12@gmail.com" required>
                 </div>
                 <div class="form-group">
                     <label>كلمة السر</label>
-                    <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+                    <input type="password" id="auth-pass" class="form-control" placeholder="••••••••" required>
                 </div>
-                <button type="submit" class="btn-btn btn-gold">تسجيل الدخول لتحميل البيانات</button>
+                <button type="submit" class="btn btn-gold">تسجيل الدخول</button>
             </form>
-
-            <a class="no-account-link" onclick="switchPage('globe-page', document.querySelectorAll('.nav-item')[1])">
-                ليس لدي حساب؟ الانتقال للخريطة التفاعلية <i class="fa-solid fa-arrow-left"></i>
-            </a>
         </div>
     </section>
 
-    <!-- SECTION 2: 3D GLOBE PAGE -->
-    <section id="globe-page" class="page-section">
+    <!-- 2. GLOBE VIEW -->
+    <section id="globe-view" class="page-view">
         <div id="globeViz"></div>
-        <div class="globe-hint">
-            <i class="fa-solid fa-hand-pointer"></i> يمكنك تدوير الكرة الأرضية والضغط على النقاط المضيئة لاستكشاف المواقع والأبحاث
-        </div>
     </section>
 
-    <!-- SECTION 3: RESEARCH & PUBLICATIONS PAGE -->
-    <section id="publications-page" class="page-section">
+    <!-- 3. RESEARCH VIEW -->
+    <section id="research-view" class="page-view">
         <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">الأبحاث والمؤلفات العلمية</h2>
-                <p style="color: var(--text-muted);">مكتبة شاملة تضم كافة الدراسات المحكّمة والكتب والأوراق البحثية</p>
-            </div>
-
-            <!-- Filter Tabs -->
-            <div class="filter-tabs">
-                <button class="tab-btn active" onclick="filterResearch('all')">الكل</button>
-                <button class="tab-btn" onclick="filterResearch('gis')">نظم المعلومات الجغرافية (GIS)</button>
-                <button class="tab-btn" onclick="filterResearch('rs')">الاستشعار عن بعد</button>
-                <button class="tab-btn" onclick="filterResearch('survey')">المساحة</button>
-            </div>
-
-            <div class="grid" id="research-grid">
-                <!-- Research Item 1 -->
-                <div class="card" data-category="gis">
-                    <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=800&q=80" class="card-img" alt="Research">
-                    <div class="card-body">
-                        <h3 class="card-title">نمذجة الملاءمة المكانية لسدود الأودية الجافة</h3>
-                        <p class="card-text">استخدام ArcGIS Pro و ModelBuilder لتحديد أحواض الصرف والمواقع المثالية لحصاد المياه.</p>
-                        <a href="#" style="color: var(--accent-blue); font-weight:700; text-decoration:none;">تحميل البحث (PDF) <i class="fa-solid fa-download"></i></a>
-                    </div>
-                </div>
-
-                <!-- Research Item 2 -->
-                <div class="card" data-category="rs">
-                    <img src="https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?auto=format&fit=crop&w=800&q=80" class="card-img" alt="Research">
-                    <div class="card-body">
-                        <h3 class="card-title">تصنيف المحاصيل باستخدام Sentinel-1 و GEE</h3>
-                        <p class="card-text">معالجة البيانات الرادارية SAR وتطبيق خوارزميات التعلم الآلي لتصنيف المحاصيل الزراعية.</p>
-                        <a href="#" style="color: var(--accent-blue); font-weight:700; text-decoration:none;">قراءة الورقة <i class="fa-solid fa-arrow-left"></i></a>
-                    </div>
-                </div>
-
-                <!-- Research Item 3 -->
-                <div class="card" data-category="survey">
-                    <img src="https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=800&q=80" class="card-img" alt="Research">
-                    <div class="card-body">
-                        <h3 class="card-title">تطبيقات التقنيات المساحية والرفع الجيوديسي</h3>
-                        <p class="card-text">دراسة تحليلية حول دقة أجهزة GPS والرفع المساحي في إنشاء شبكات الإحداثيات.</p>
-                        <a href="#" style="color: var(--accent-blue); font-weight:700; text-decoration:none;">استعراض <i class="fa-solid fa-arrow-left"></i></a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- SECTION 4: MAPS & DASHBOARDS PAGE (With Data Upload & Auto-Charts) -->
-    <section id="dashboards-page" class="page-section">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">لوحات العرض والتحليل التفاعلي</h2>
-                <p style="color: var(--text-muted);">ارفع بياناتك الإحصائية (Excel / CSV) لتوليد إنفوجرافيك ورسوم بيانية ذكية فوراً</p>
-            </div>
-
-            <!-- Drag and Drop Upload -->
-            <div class="upload-box" onclick="document.getElementById('fileInput').click()">
-                <i class="fa-solid fa-cloud-arrow-up" style="font-size: 3rem; color: var(--accent-gold); margin-bottom: 1rem;"></i>
-                <h3>اضغط هنا أو اسحب ملف (Excel / CSV) لرفعه للتحليل</h3>
-                <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 5px;">سيتم تحويل البيانات تلقائياً إلى أشغال بيانية وإنفوجرافيك ذكي</p>
-                <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;" onchange="processDataFile(event)">
-            </div>
-
-            <!-- Generated Charts Section -->
-            <div class="dashboard-grid">
-                <div class="chart-card">
-                    <h4 style="margin-bottom: 1rem; color: var(--accent-gold);"><i class="fa-solid fa-chart-column"></i> الأعمدة البيانية (Bar Chart)</h4>
-                    <canvas id="barChartCanvas"></canvas>
-                </div>
-                <div class="chart-card">
-                    <h4 style="margin-bottom: 1rem; color: var(--accent-blue);"><i class="fa-solid fa-chart-pie"></i> الدوائر النسبية (Pie Chart)</h4>
-                    <canvas id="pieChartCanvas"></canvas>
-                </div>
-            </div>
-
-            <!-- AI Insight Section -->
-            <div class="ai-box" id="aiAnalysisBox" style="display: none;">
-                <h3 style="color: var(--accent-gold); display: flex; align-items: center; gap: 10px; margin-bottom: 0.8rem;">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> تحليل المساعد الذكي (AI Analysis)
-                </h3>
-                <p id="aiSummaryText" style="line-height: 1.8; color: var(--text-main); font-size: 0.95rem;"></p>
-            </div>
-        </div>
-    </section>
-
-    <!-- SECTION 5: CONTACT PAGE -->
-    <section id="contact-page" class="page-section">
-        <div class="container" style="text-align: center; max-width: 600px;">
-            <div class="section-header">
-                <h2 class="section-title">تواصل معي</h2>
-                <p style="color: var(--text-muted);">يسعدني استقبال واستفساراتكم الأكاديمية والمقترحات البحثية</p>
-            </div>
-            <div style="display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 2rem;">
-                <a href="#" style="font-size: 1.8rem; color: var(--accent-gold);"><i class="fa-solid fa-graduation-cap"></i></a>
-                <a href="#" style="font-size: 1.8rem; color: var(--accent-blue);"><i class="fa-brands fa-linkedin"></i></a>
-                <a href="#" style="font-size: 1.8rem; color: #fff;"><i class="fa-regular fa-envelope"></i></a>
-            </div>
-        </div>
-    </section>
-
-    <footer>
-        <p>© 2026 محمود طارق | جميع الحقوق محفوظة - المنصة الأكاديمية والجغرافية</p>
-    </footer>
-
-    <!-- Logic Script -->
-    <script>
-        // 1. Single Page Application (SPA) Switcher
-        function switchPage(pageId, element) {
-            document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            <h1 class="page-title">الأبحاث والمؤلفات العلمية</h1>
+            <p class="page-subtitle">استعراض الدراسات الجغرافية وأوراق العمل المحكّمة</p>
             
-            document.getElementById(pageId).classList.add('active');
-            if(element) element.classList.add('active');
+            <div class="grid">
+                <div class="card">
+                    <div>
+                        <span style="color: var(--accent-gold); font-size: 0.8rem; font-weight:700;">GIS & Hydrological Modeling</span>
+                        <h3 style="margin: 0.5rem 0;">نمذجة الملاءمة المكانية لسدود الأودية الجافة</h3>
+                        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6;">دراسة معالجة حوض الصرف وتحديد أفضل المواقع الهيدرولوجية باستخدام ArcGIS Pro.</p>
+                    </div>
+                    <button class="btn btn-gold" style="margin-top: 1rem;">تحميل البحث (PDF)</button>
+                </div>
+                <div class="card">
+                    <div>
+                        <span style="color: var(--accent-blue); font-size: 0.8rem; font-weight:700;">Remote Sensing & GEE</span>
+                        <h3 style="margin: 0.5rem 0;">تصنيف المحاصيل الزراعية باستخدام Sentinel-1</h3>
+                        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6;">استخدام الرادار والتعلم الآلي عبر منصة Google Earth Engine لتصنيف الغطاء النباتي.</p>
+                    </div>
+                    <button class="btn btn-gold" style="margin-top: 1rem;">تحميل البحث (PDF)</button>
+                </div>
+            </div>
+        </div>
+    </section>
 
-            // Resize globe canvas if switching to globe view
-            if(pageId === 'globe-page' && world) {
+    <!-- 4. BOOKS VIEW (NEW SECTION WITH UPLOAD) -->
+    <section id="books-view" class="page-view">
+        <div class="container">
+            <h1 class="page-title">مكتبة الكتب العلمية</h1>
+            <p class="page-subtitle">مجموعة من الكتب والمراجع لمختلف العلماء والباحثين في الجغرافيا والتقنيات المكانية</p>
+
+            <!-- Upload Book/Paper Option -->
+            <div class="upload-section">
+                <i class="fa-solid fa-file-circle-plus" style="font-size: 2.5rem; color: var(--accent-gold); margin-bottom: 0.8rem;"></i>
+                <h3 style="margin-bottom: 0.5rem;">هل تريد مشاركة كتاب أو بحث علمي؟</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.2rem;">يمكنك رفع الملفات بصيغة PDF مباشرة ليتم مراجعتها وإضافتها للمنصة</p>
+                <input type="file" id="userBookFile" accept=".pdf,.epub,.zip" style="display: none;" onchange="alert('تم استلام ملفك بنجاح وسوف يتم مراجعته لرفعه على المنصة. شكراً لمشاركتك!')">
+                <button class="btn btn-gold" style="width: auto; padding: 10px 25px;" onclick="document.getElementById('userBookFile').click()">
+                    <i class="fa-solid fa-upload"></i> رفع ملف / كتاب جديد
+                </button>
+            </div>
+
+            <!-- Books Display Grid -->
+            <div class="grid">
+                <div class="card">
+                    <div>
+                        <h3 style="margin-bottom: 0.5rem; color: var(--accent-gold);"><i class="fa-solid fa-book"></i> أساسيات نظم المعلومات الجغرافية</h3>
+                        <p style="color: var(--text-muted); font-size: 0.85rem;">مرجع شامل يفصل أسس التحليل المكاني، إدخال البيانات، وبناء قواعد البيانات الجغرافية.</p>
+                    </div>
+                    <button class="btn btn-gold" style="margin-top: 1rem;">قراءة / تنزيل</button>
+                </div>
+                <div class="card">
+                    <div>
+                        <h3 style="margin-bottom: 0.5rem; color: var(--accent-blue);"><i class="fa-solid fa-book"></i> الاستشعار عن بعد والمعالجة الرقمية</h3>
+                        <p style="color: var(--text-muted); font-size: 0.85rem;">كتاب متخصص في تحليل الصور الفضائية واستخراج الأدلة الطيفية مع التطبيقات العملية.</p>
+                    </div>
+                    <button class="btn btn-gold" style="margin-top: 1rem;">قراءة / تنزيل</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. PROTECTED DATA VIEW (ACCESSIBLE ONLY AFTER LOGIN) -->
+    <section id="data-view" class="page-view">
+        <div class="container">
+            <h1 class="page-title" style="color: var(--accent-gold);"><i class="fa-solid fa-database"></i> البيانات الجغرافية الخاصّة (Data)</h1>
+            <p class="page-subtitle">مرحباً بك! هذه الصفحة مخصصة فقط للحسابات المعتمدة لتنزيل الـ GeoDatabase والـ Shapefiles</p>
+
+            <div class="grid">
+                <div class="card" style="border-color: var(--accent-gold);">
+                    <h3><i class="fa-solid fa-folder-zip" style="color: var(--accent-gold);"></i> GeoDatabase كامل المحافظات</h3>
+                    <p style="color: var(--text-muted); font-size: 0.88rem; margin: 0.8rem 0;">قاعدة بيانات جغرافية متكاملة تحتوي على الطبقات الخطية والشبكات الهيدرولوجية.</p>
+                    <a href="#" class="btn btn-gold" style="text-decoration:none; text-align:center;">تحميل GDB (ZIP)</a>
+                </div>
+                <div class="card" style="border-color: var(--accent-blue);">
+                    <h3><i class="fa-solid fa-layer-group" style="color: var(--accent-blue);"></i> Shapefiles أحواض الصرف</h3>
+                    <p style="color: var(--text-muted); font-size: 0.88rem; margin: 0.8rem 0;">ملفات شيب فايل جاهزة للاستخدام في برامج ArcGIS Pro و QGIS.</p>
+                    <a href="#" class="btn btn-gold" style="text-decoration:none; text-align:center;">تحميل Shapefiles</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. CONTACT VIEW -->
+    <section id="contact-view" class="page-view">
+        <div class="container" style="text-align: center;">
+            <h1 class="page-title">التواصل معي</h1>
+            <p class="page-subtitle">يمكنك التواصل المباشر معي عبر المنصات التالية:</p>
+
+            <div class="contact-container">
+                <!-- ضف رابط الـ LinkedIn الخاص بك مكان العلامة # -->
+                <a href="#" target="_blank" class="contact-card">
+                    <i class="fa-brands fa-linkedin linkedin-icon"></i>
+                    <h4>LinkedIn</h4>
+                </a>
+
+                <!-- ضف رابط الواتساب الخاص بك مكان العلامة # -->
+                <a href="#" target="_blank" class="contact-card">
+                    <i class="fa-brands fa-whatsapp whatsapp-icon"></i>
+                    <h4>WhatsApp</h4>
+                </a>
+
+                <!-- ضف رابط الفيسبوك الخاص بك مكان العلامة # -->
+                <a href="#" target="_blank" class="contact-card">
+                    <i class="fa-brands fa-facebook facebook-icon"></i>
+                    <h4>Facebook</h4>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // 1. Tab & Page Switcher Function
+        function switchTab(pageId, element) {
+            document.querySelectorAll('.page-view').forEach(view => view.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+
+            document.getElementById(pageId).classList.add('active');
+            if (element) element.classList.add('active');
+
+            // Render Globe properly if active
+            if (pageId === 'globe-view' && globeInstance) {
                 setTimeout(() => {
-                    world.width(window.innerWidth).height(window.innerHeight - 80);
+                    globeInstance.width(window.innerWidth).height(window.innerHeight - 70);
                 }, 100);
             }
         }
 
-        // 2. Login Handling Demo
-        function handleLogin(e) {
+        // 2. Authentication Control System
+        function handleAuth(e) {
             e.preventDefault();
-            const user = document.getElementById('username').value;
-            alert(`أهلاً بك يا ${user}! تم تسجيل الدخول بنجاح. يمكنك الآن تحميل ملفات الـ Shapefiles والـ GeoDatabase.`);
+            const emailInput = document.getElementById('auth-email').value.trim();
+            const passInput = document.getElementById('auth-pass').value.trim();
+
+            const ALLOWED_EMAIL = "Houda_Geosss12@gmail.com";
+            const ALLOWED_PASS = "0215fds4sf984ef#&sdfs5df";
+
+            if (emailInput === ALLOWED_EMAIL && passInput === ALLOWED_PASS) {
+                alert("تم تسجيل الدخول بنجاح! تم فتح تبويب البيانات (Data).");
+                const dataTab = document.getElementById('data-nav-link');
+                dataTab.style.display = 'inline-block';
+                switchTab('data-view', dataTab);
+            } else {
+                alert("فشل تسجيل الدخول! البريد الإلكتروني أو كلمة السر غير صحيحة. يرجى التواصل مع الطالب محمود للحصول على صلاحية الدخول.");
+            }
         }
 
-        // 3. Globe Initialization
-        const gData = [
-            { lat: 30.0444, lng: 31.2357, name: 'نمذجة مخرات السيول بأودية جافة', city: 'القاهرة - مصر', type: 'بحث هيدرولوجي', color: '#d4af37' },
-            { lat: 28.5306, lng: 33.9344, name: 'لوحة شبكات التصريف والنطاقات التضاريسية', city: 'جنوب سيناء', type: 'لوحة خرائطية', color: '#38bdf8' },
-            { lat: 31.2001, lng: 29.9187, name: 'تصنيف المحاصيل بالاستشعار عن بعد', city: 'دلتا النيل', type: 'بحث SAR', color: '#10b981' }
-        ];
-
-        let world;
+        // 3. Globe Initialization (High Quality 3D Earth)
+        let globeInstance;
         window.addEventListener('DOMContentLoaded', () => {
-            world = Globe()(document.getElementById('globeViz'))
-                .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
+            const studyPoints = [
+                { lat: 30.0444, lng: 31.2357, title: 'القاهرة - دراسة الهيدرولوجيا' },
+                { lat: 28.5306, lng: 33.9344, title: 'جنوب سيناء - شبكات الصرف' },
+                { lat: 31.2001, lng: 29.9187, title: 'الدلتا - تصنيف المحاصيل' }
+            ];
+
+            globeInstance = Globe()(document.getElementById('globeViz'))
+                .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                 .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
                 .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
-                .pointsData(gData)
+                .pointsData(studyPoints)
                 .pointLat('lat')
                 .pointLng('lng')
-                .pointColor('color')
-                .pointAltitude(0.06)
-                .pointRadius(0.7)
-                .pointLabel(d => `
-                    <div style="background:rgba(8,13,26,0.9); border:1px solid #d4af37; padding:8px 12px; border-radius:8px; color:#fff;">
-                        <strong style="color:#d4af37">${d.name}</strong><br>
-                        <small>📍 ${d.city} | ${d.type}</small>
-                    </div>
-                `);
+                .pointColor(() => '#d4af37')
+                .pointAltitude(0.05)
+                .pointRadius(0.8)
+                .pointLabel('title');
 
-            world.controls().autoRotate = true;
-            world.controls().autoRotateSpeed = 0.8;
-            world.pointOfView({ lat: 26.0, lng: 30.0, altitude: 2.2 });
+            globeInstance.controls().autoRotate = true;
+            globeInstance.controls().autoRotateSpeed = 0.7;
+            globeInstance.pointOfView({ lat: 26.0, lng: 30.0, altitude: 2.0 });
         });
-
-        // 4. Research Filter Logic
-        function filterResearch(category) {
-            const cards = document.querySelectorAll('#research-grid .card');
-            cards.forEach(card => {
-                if(category === 'all' || card.getAttribute('data-category') === category) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-
-            // Update Tab styles
-            const tabs = document.querySelectorAll('.filter-tabs .tab-btn');
-            tabs.forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
-        }
-
-        // 5. Excel/CSV File Processing & Automated Charts
-        let barChart, pieChart;
-
-        function processDataFile(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                const data = new Uint8Array(evt.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
-                const firstSheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[firstSheetName];
-                const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
-
-                if(jsonData.length > 1) {
-                    generateChartsFromData(jsonData);
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function generateChartsFromData(data) {
-            const labels = [];
-            const values = [];
-
-            // Extract labels (col 0) and numerical values (col 1)
-            for(let i = 1; i < data.length; i++) {
-                if(data[i][0] && data[i][1] !== undefined) {
-                    labels.push(data[i][0]);
-                    values.push(Number(data[i][1]));
-                }
-            }
-
-            // Render Bar Chart
-            if(barChart) barChart.destroy();
-            const ctxBar = document.getElementById('barChartCanvas').getContext('2d');
-            barChart = new Chart(ctxBar, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'القيم الإحصائية المرفوعة',
-                        data: values,
-                        backgroundColor: '#38bdf8'
-                    }]
-                },
-                options: { responsive: true, plugins: { legend: { labels: { color: '#fff' } } } }
-            });
-
-            // Render Pie Chart
-            if(pieChart) pieChart.destroy();
-            const ctxPie = document.getElementById('pieChartCanvas').getContext('2d');
-            pieChart = new Chart(ctxPie, {
-                type: 'pie',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: values,
-                        backgroundColor: ['#d4af37', '#38bdf8', '#10b981', '#f59e0b', '#ec4899']
-                    }]
-                },
-                options: { responsive: true, plugins: { legend: { labels: { color: '#fff' } } } }
-            });
-
-            // Display AI Insights
-            const totalSum = values.reduce((a, b) => a + b, 0);
-            const avgVal = (totalSum / values.length).toFixed(2);
-            document.getElementById('aiAnalysisBox').style.display = 'block';
-            document.getElementById('aiSummaryText').innerHTML = 
-                `بناءً على البيانات المرفوعة، تم تحليل <b>${labels.length}</b> من العناصر المكانية/الإحصائية. بلغ المجموع الكلي للقيم <b>${totalSum}</b> ومتوسط القيمة <b>${avgVal}</b>. تظهر النسبة الأعلى في العنصر (<b>${labels[0]}</b>).`;
-        }
     </script>
 </body>
 </html>
