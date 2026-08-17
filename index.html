@@ -1,526 +1,147 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GeoVision | Geospatial & Academic Platform</title>
+  <meta charset="UTF-8">
+  <title>التطبيق الجغرافي التفاعلي</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    
+    /* شريط التنقل */
+    nav { background: #2c3e50; padding: 10px; color: white; display: flex; gap: 10px; }
+    nav button { background: #34495e; color: white; border: none; padding: 8px 15px; cursor: pointer; border-radius: 4px; }
+    nav button.active { background: #27ae60; }
+    
+    /* التحكم في ظهور التبويبات */
+    .tab-content { display: none; padding: 20px; }
+    .tab-content.active { display: block; }
+    
+    /* حظر التبويبات للمستخدمين غير المسجلين */
+    .protected-tab { display: none !important; }
+    .logged-in .protected-tab { display: none; } /* سيتم إظهارها حسب التبويب النشط فقط */
+    .logged-in .protected-tab.active { display: block !important; }
 
-    <!-- CesiumJS Engine for Earth & High-Res Zoom Satellite Imagery -->
-    <script src="https://cesium.com/downloads/cesiumjs/releases/1.115/Cesium/Cesium.js"></script>
-    <link href="https://cesium.com/downloads/cesiumjs/releases/1.115/Cesium/Widgets/widgets.css" rel="stylesheet">
-
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-    <style>
-        :root {
-            --bg-dark: #030712;
-            --card-bg: rgba(17, 24, 39, 0.85);
-            --accent-gold: #d4af37;
-            --accent-blue: #38bdf8;
-            --text-main: #f9fafb;
-            --text-muted: #9ca3af;
-            --border-color: rgba(255, 255, 255, 0.1);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            overflow-x: hidden;
-            height: 100vh;
-        }
-
-        /* Top Navigation Bar */
-        nav {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            height: 70px;
-            z-index: 1000;
-            background: rgba(3, 7, 18, 0.95);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border-color);
-            padding: 0 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 1.3rem;
-            font-weight: 800;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            letter-spacing: -0.5px;
-        }
-
-        .logo i { color: var(--accent-gold); }
-
-        .nav-links {
-            display: flex;
-            gap: 1.2rem;
-            list-style: none;
-        }
-
-        .nav-links a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-            cursor: pointer;
-            padding: 6px 14px;
-            border-radius: 8px;
-        }
-
-        .nav-links a:hover, .nav-links a.active {
-            color: var(--accent-gold);
-            background: rgba(212, 175, 55, 0.1);
-        }
-
-        /* Page System */
-        .page-view {
-            display: none;
-            height: calc(100vh - 70px);
-            margin-top: 70px;
-            overflow-y: auto;
-            animation: fadeIn 0.4s ease-in-out;
-        }
-
-        .page-view.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2.5rem 1.5rem;
-        }
-
-        .page-title {
-            font-size: 2rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-            color: var(--text-main);
-            text-align: center;
-        }
-
-        .page-subtitle {
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            margin-bottom: 2.5rem;
-        }
-
-        /* HOME PAGE LOGIN CARD */
-        #home-view {
-            background: radial-gradient(circle at center, #0b1426 0%, #02040a 100%), 
-                        url('https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=1920&q=80');
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .login-card {
-            background: var(--card-bg);
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            backdrop-filter: blur(16px);
-            padding: 2.5rem;
-            border-radius: 20px;
-            width: 100%;
-            max-width: 440px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
-            text-align: center;
-        }
-
-        .form-group {
-            margin-bottom: 1.2rem;
-            text-align: left;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px 16px;
-            background: rgba(3, 7, 18, 0.8);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: #fff;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-
-        .form-control:focus {
-            border-color: var(--accent-gold);
-            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
-        }
-
-        .btn {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-gold {
-            background: linear-gradient(135deg, var(--accent-gold) 0%, #b89320 100%);
-            color: #000;
-        }
-
-        .btn-gold:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
-        }
-
-        /* GLOBE VIEW CONTAINER */
-        #globe-view {
-            position: relative;
-            height: calc(100vh - 70px);
-            width: 100vw;
-            overflow: hidden;
-            background: #000;
-        }
-
-        #globeViz {
-            width: 100%;
-            height: 100%;
-        }
-
-        .cesium-viewer-bottom {
-            display: none !important;
-        }
-
-        /* CARDS GRID */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            transition: transform 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent-gold);
-        }
-
-        .upload-section {
-            background: rgba(17, 24, 39, 0.6);
-            border: 2px dashed rgba(212, 175, 55, 0.4);
-            border-radius: 16px;
-            padding: 2rem;
-            text-align: center;
-            margin-bottom: 2.5rem;
-        }
-
-        /* CONTACT LINKS */
-        .contact-container {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .contact-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            padding: 2rem;
-            border-radius: 16px;
-            width: 180px;
-            text-align: center;
-            text-decoration: none;
-            color: var(--text-main);
-            transition: all 0.3s ease;
-        }
-
-        .contact-card:hover {
-            transform: translateY(-8px);
-            border-color: var(--accent-gold);
-        }
-
-        .contact-card i {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .linkedin-icon { color: #0a66c2; }
-        .whatsapp-icon { color: #25d366; }
-        .facebook-icon { color: #1877f2; }
-    </style>
+    /* حاوية الخريطة */
+    #map { width: 100%; height: 500px; border-radius: 8px; margin-top: 10px; }
+    .form-box { max-width: 300px; margin: 50px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+  </style>
 </head>
 <body>
 
-    <!-- TOP NAVIGATION BAR -->
-    <nav>
-        <div class="logo">
-            <i class="fa-solid fa-globe"></i>
-            <span>GeoVision</span>
-        </div>
-        <ul class="nav-links">
-            <li><a class="nav-item active" onclick="switchTab('home-view', this)">Home</a></li>
-            <li><a class="nav-item" onclick="switchTab('globe-view', this)">Geospatial Study Sites</a></li>
-            <li><a class="nav-item" onclick="switchTab('research-view', this)">Research & Publications</a></li>
-            <li><a class="nav-item" onclick="switchTab('books-view', this)">Library</a></li>
-            <li><a class="nav-item" id="data-nav-link" style="display: none;" onclick="switchTab('data-view', this)">Data</a></li>
-            <li><a class="nav-item" onclick="switchTab('contact-view', this)">Contact</a></li>
-        </ul>
-    </nav>
+  <!-- شريط التنقل -->
+  <nav id="navbar">
+    <button onclick="switchTab('login-tab')" id="btn-login" class="active">تسجيل الدخول</button>
+    <button onclick="switchTab('map-tab')" id="btn-map" class="protected-tab">الخريطة التفاعلية</button>
+    <button onclick="switchTab('analytics-tab')" id="btn-analytics" class="protected-tab">التحليلات والتصنيف</button>
+  </nav>
 
-    <!-- 1. HOME VIEW (LOGIN) -->
-    <section id="home-view" class="page-view active">
-        <div class="login-card">
-            <div style="font-size: 2.5rem; color: var(--accent-gold); margin-bottom: 0.5rem;">
-                <i class="fa-solid fa-user-lock"></i>
-            </div>
-            <h2 style="margin-bottom: 0.5rem;">Member Portal</h2>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">Sign in to access protected spatial datasets and GIS resources</p>
-            
-            <form onsubmit="handleAuth(event)">
-                <div class="form-group">
-                    <label>Email Address</label>
-                    <input type="email" id="auth-email" class="form-control" placeholder="name@example.com" required>
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="auth-pass" class="form-control" placeholder="••••••••" required>
-                </div>
-                <button type="submit" class="btn btn-gold">Sign In</button>
-            </form>
-        </div>
-    </section>
+  <!-- 1. تبويب تسجيل الدخول (يظهر أولاً) -->
+  <div id="login-tab" class="tab-content active">
+    <div class="form-box">
+      <h3>تسجيل الدخول</h3>
+      <input type="email" id="email" placeholder="البريد الإلكتروني" style="width:100%; margin-bottom:10px; padding:8px;"><br>
+      <input type="password" id="password" placeholder="كلمة المرور" style="width:100%; margin-bottom:10px; padding:8px;"><br>
+      <button onclick="handleLogin()" style="width:100%; padding:10px; background:#27ae60; color:white; border:none; cursor:pointer;">دخول</button>
+    </div>
+  </div>
 
-    <!-- 2. GLOBE VIEW (CESIUM SATELLITE GLOBE) -->
-    <section id="globe-view" class="page-view">
-        <div id="globeViz"></div>
-    </section>
+  <!-- 2. تبويب الخريطة (محمي) -->
+  <div id="map-tab" class="tab-content protected-tab">
+    <h2>الخريطة التفاعلية</h2>
+    <div id="map"></div>
+  </div>
 
-    <!-- 3. RESEARCH VIEW -->
-    <section id="research-view" class="page-view">
-        <div class="container">
-            <h1 class="page-title">Research & Publications</h1>
-            <p class="page-subtitle">Exploring spatial analysis, remote sensing, and hydrological modeling studies</p>
-            
-            <div class="grid">
-                <div class="card">
-                    <div>
-                        <span style="color: var(--accent-gold); font-size: 0.8rem; font-weight:700;">GIS & Hydrological Modeling</span>
-                        <h3 style="margin: 0.5rem 0;">Dam Suitability Analysis for Dry Valleys</h3>
-                        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6;">Watershed processing and hydrological suitability modeling using ArcGIS Pro ModelBuilder.</p>
-                    </div>
-                    <button class="btn btn-gold" style="margin-top: 1rem;">Download Paper (PDF)</button>
-                </div>
-                <div class="card">
-                    <div>
-                        <span style="color: var(--accent-blue); font-size: 0.8rem; font-weight:700;">Remote Sensing & GEE</span>
-                        <h3 style="margin: 0.5rem 0;">Crop Classification via Sentinel-1 SAR</h3>
-                        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6;">Machine learning-based agricultural mapping using multi-temporal SAR imagery in Google Earth Engine.</p>
-                    </div>
-                    <button class="btn btn-gold" style="margin-top: 1rem;">Download Paper (PDF)</button>
-                </div>
-            </div>
-        </div>
-    </section>
+  <!-- 3. تبويب التحليلات (محمي) -->
+  <div id="analytics-tab" class="tab-content protected-tab">
+    <h2>نتائج التحليل والتصنيف</h2>
+    <p>هنا تظهر بيانات وتفاصيل نتائج التقييم والتصنيف بعد تسجيل الدخول.</p>
+  </div>
 
-    <!-- 4. BOOKS VIEW -->
-    <section id="books-view" class="page-view">
-        <div class="container">
-            <h1 class="page-title">Geospatial Digital Library</h1>
-            <p class="page-subtitle">A curated collection of academic textbooks, references, and research resources</p>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    let map = null;
+    let isLoggedIn = false;
 
-            <div class="upload-section">
-                <i class="fa-solid fa-file-circle-plus" style="font-size: 2.5rem; color: var(--accent-gold); margin-bottom: 0.8rem;"></i>
-                <h3 style="margin-bottom: 0.5rem;">Would you like to contribute a book or paper?</h3>
-                <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.2rem;">Upload PDF documents to be reviewed and added to the platform library</p>
-                <input type="file" id="userBookFile" accept=".pdf,.epub,.zip" style="display: none;" onchange="alert('File uploaded successfully! It will be reviewed before publication.')">
-                <button class="btn btn-gold" style="width: auto; padding: 10px 25px;" onclick="document.getElementById('userBookFile').click()">
-                    <i class="fa-solid fa-upload"></i> Upload Resource
-                </button>
-            </div>
+    // تسجيل الدخول والإظهار الشرطي للتبويبات
+    function handleLogin() {
+      // تعيين حالة الدخول
+      isLoggedIn = true;
+      document.body.classList.add('logged-in');
 
-            <div class="grid">
-                <div class="card">
-                    <div>
-                        <h3 style="margin-bottom: 0.5rem; color: var(--accent-gold);"><i class="fa-solid fa-book"></i> Fundamentals of GIS</h3>
-                        <p style="color: var(--text-muted); font-size: 0.85rem;">Comprehensive guide covering spatial analysis principles, raster processing, and database architecture.</p>
-                    </div>
-                    <button class="btn btn-gold" style="margin-top: 1rem;">Read / Download</button>
-                </div>
-                <div class="card">
-                    <div>
-                        <h3 style="margin-bottom: 0.5rem; color: var(--accent-blue);"><i class="fa-solid fa-book"></i> Remote Sensing & Digital Processing</h3>
-                        <p style="color: var(--text-muted); font-size: 0.85rem;">Advanced methods for satellite imagery analysis, spectral indices, and radar processing applications.</p>
-                    </div>
-                    <button class="btn btn-gold" style="margin-top: 1rem;">Read / Download</button>
-                </div>
-            </div>
-        </div>
-    </section>
+      // إخفاء تبويب تسجيل الدخول والزر الخاص به
+      document.getElementById('login-tab').classList.remove('active');
+      document.getElementById('btn-login').style.display = 'none';
 
-    <!-- 5. PROTECTED DATA VIEW -->
-    <section id="data-view" class="page-view">
-        <div class="container">
-            <h1 class="page-title" style="color: var(--accent-gold);"><i class="fa-solid fa-database"></i> Protected Spatial Data</h1>
-            <p class="page-subtitle">Welcome! Authorized access granted for downloading Geodatabases and Shapefiles</p>
+      // التوجيه مباشرة لتبويب الخريطة
+      switchTab('map-tab');
+    }
 
-            <div class="grid">
-                <div class="card" style="border-color: var(--accent-gold);">
-                    <h3><i class="fa-solid fa-folder-zip" style="color: var(--accent-gold);"></i> National Geodatabase (GDB)</h3>
-                    <p style="color: var(--text-muted); font-size: 0.88rem; margin: 0.8rem 0;">Integrated spatial database containing vector layers and hydrological networks.</p>
-                    <a href="#" class="btn btn-gold" style="text-decoration:none; text-align:center;">Download GDB (ZIP)</a>
-                </div>
-                <div class="card" style="border-color: var(--accent-blue);">
-                    <h3><i class="fa-solid fa-layer-group" style="color: var(--accent-blue);"></i> Watershed Shapefiles</h3>
-                    <p style="color: var(--text-muted); font-size: 0.88rem; margin: 0.8rem 0;">Ready-to-use shapefiles optimized for ArcGIS Pro and QGIS analytical workflows.</p>
-                    <a href="#" class="btn btn-gold" style="text-decoration:none; text-align:center;">Download Shapefiles</a>
-                </div>
-            </div>
-        </div>
-    </section>
+    // التنقل بين التبويبات بشكل مستقل
+    function switchTab(tabId) {
+      // التأكد من عدم إمكانية فتح التبويبات المحمية دون تسجيل الدخول
+      if (!isLoggedIn && tabId !== 'login-tab') {
+        alert('يرجى تسجيل الدخول أولاً للوصول لهذا التبويب.');
+        return;
+      }
 
-    <!-- 6. CONTACT VIEW -->
-    <section id="contact-view" class="page-view">
-        <div class="container" style="text-align: center;">
-            <h1 class="page-title">Connect With Me</h1>
-            <p class="page-subtitle">Feel free to reach out directly via professional networks:</p>
+      // إخفاء جميع التبويبات وإلغاء تنشيط الأزرار
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
 
-            <div class="contact-container">
-                <a href="#" target="_blank" class="contact-card">
-                    <i class="fa-brands fa-linkedin linkedin-icon"></i>
-                    <h4>LinkedIn</h4>
-                </a>
-                <a href="#" target="_blank" class="contact-card">
-                    <i class="fa-brands fa-whatsapp whatsapp-icon"></i>
-                    <h4>WhatsApp</h4>
-                </a>
-                <a href="#" target="_blank" class="contact-card">
-                    <i class="fa-brands fa-facebook facebook-icon"></i>
-                    <h4>Facebook</h4>
-                </a>
-            </div>
-        </div>
-    </section>
+      // إظهار التبويب المطلوب فقط
+      document.getElementById(tabId).classList.add('active');
+      
+      // تفعيل الزر المطابق
+      const activeBtnMap = {
+        'login-tab': 'btn-login',
+        'map-tab': 'btn-map',
+        'analytics-tab': 'btn-analytics'
+      };
+      if (activeBtnMap[tabId]) {
+        document.getElementById(activeBtnMap[tabId]).classList.add('active');
+      }
 
-    <!-- JAVASCRIPT LOGIC -->
-    <script>
-        // 1. Tab & Page Switcher Function
-        function switchTab(pageId, element) {
-            document.querySelectorAll('.page-view').forEach(view => view.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+      // إعادة تهيئة وتحديث حجم الخريطة عند فتح تبويب الخريطة
+      if (tabId === 'map-tab') {
+        initMap();
+        setTimeout(() => {
+          if (map) map.invalidateSize(); // إصلاح مشكلة عدم تحميل أجزاء من الخريطة
+        }, 200);
+      }
+    }
 
-            document.getElementById(pageId).classList.add('active');
-            if (element) element.classList.add('active');
-        }
+    // تهيئة الخريطة مع طبقات OSM و ESRI Imagery
+    function initMap() {
+      if (map !== null) return; // منع إعادة التهيئة المتكررة
 
-        // 2. Authentication Control System
-        function handleAuth(e) {
-            e.preventDefault();
-            const emailInput = document.getElementById('auth-email').value.trim();
-            const passInput = document.getElementById('auth-pass').value.trim();
+      // 1. طبقة OpenStreetMap
+      const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+      });
 
-            const ALLOWED_EMAIL = "Houda_Geosss12@gmail.com";
-            const ALLOWED_PASS = "0215fds4sf984ef#&sdfs5df";
+      // 2. طبقة ESRI World Imagery (صور الأقمار الصناعية)
+      const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+      });
 
-            if (emailInput === ALLOWED_EMAIL && passInput === ALLOWED_PASS) {
-                alert("Access granted! The protected 'Data' tab is now unlocked.");
-                const dataTab = document.getElementById('data-nav-link');
-                dataTab.style.display = 'inline-block';
-                switchTab('data-view', dataTab);
-            } else {
-                alert("Authentication failed! Invalid email or password. Please request authorized credentials.");
-            }
-        }
+      // إنشاء الخريطة وإضافة الطبقة الافتراضية
+      map = L.map('map', {
+        center: [30.0444, 31.2357], // إحداثيات القاهرة كمثال
+        zoom: 6,
+        layers: [osmLayer]
+      });
 
-        // 3. Globe & High-Res Satellite Imagery Initialization (CesiumJS)
-        let viewer;
-        window.addEventListener('DOMContentLoaded', () => {
-            viewer = new Cesium.Viewer('globeViz', {
-                imageryProvider: new Cesium.ArcGisMapServerImageryProvider({
-                    url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer'
-                }),
-                baseLayerPicker: false,
-                geocoder: true,
-                navigationHelpButton: false,
-                homeButton: true,
-                sceneModePicker: false,
-                animation: false,
-                timeline: false,
-                fullscreenButton: false
-            });
+      // قائمة التحكم بالطبقات (Layer Control)
+      const baseMaps = {
+        "خريطة الشارع المفتوحة (OpenStreetMap)": osmLayer,
+        "الصور الفضائية (Esri Imagery)": satelliteLayer
+      };
 
-            const scene = viewer.scene;
-            scene.skyAtmosphere.show = true;
-            scene.globe.enableLighting = true;
-
-            const studyPoints = [
-                { lat: 30.0444, lon: 31.2357, name: 'Cairo - Hydrological Study' },
-                { lat: 28.5306, lon: 33.9344, name: 'South Sinai - Drainage Network' },
-                { lat: 31.2001, lon: 29.9187, name: 'Delta - Crop Classification' }
-            ];
-
-            studyPoints.forEach(pt => {
-                viewer.entities.add({
-                    name: pt.name,
-                    position: Cesium.Cartesian3.fromDegrees(pt.lon, pt.lat, 500),
-                    point: {
-                        pixelSize: 12,
-                        color: Cesium.Color.fromCssColorString('#d4af37'),
-                        outlineColor: Cesium.Color.BLACK,
-                        outlineWidth: 2
-                    },
-                    label: {
-                        text: pt.name,
-                        font: '13px Inter, sans-serif',
-                        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-                        outlineWidth: 2,
-                        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-                        pixelOffset: new Cesium.Cartesian2(0, -9)
-                    }
-                });
-            });
-
-            viewer.camera.setView({
-                destination: Cesium.Cartesian3.fromDegrees(30.0, 26.0, 15000000.0)
-            });
-        });
-    </script>
+      L.control.layers(baseMaps).addTo(map);
+    }
+  </script>
 </body>
 </html>
