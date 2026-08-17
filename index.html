@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المنصة الجغرافية والأكاديمية | Mahmoud Tarek</title>
+    <title>GeoVision | Geospatial & Academic Platform</title>
 
     <!-- CesiumJS Engine for Earth & High-Res Zoom Satellite Imagery -->
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.115/Cesium/Cesium.js"></script>
@@ -15,7 +15,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -32,7 +32,7 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Cairo', sans-serif;
+            font-family: 'Inter', sans-serif;
         }
 
         body {
@@ -65,13 +65,14 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            letter-spacing: -0.5px;
         }
 
         .logo i { color: var(--accent-gold); }
 
         .nav-links {
             display: flex;
-            gap: 1.5rem;
+            gap: 1.2rem;
             list-style: none;
         }
 
@@ -80,9 +81,9 @@
             text-decoration: none;
             font-weight: 600;
             transition: all 0.3s ease;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             cursor: pointer;
-            padding: 6px 12px;
+            padding: 6px 14px;
             border-radius: 8px;
         }
 
@@ -127,7 +128,7 @@
             text-align: center;
             color: var(--text-muted);
             font-size: 0.95rem;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
         }
 
         /* HOME PAGE LOGIN CARD */
@@ -155,7 +156,7 @@
 
         .form-group {
             margin-bottom: 1.2rem;
-            text-align: right;
+            text-align: left;
         }
 
         .form-group label {
@@ -215,7 +216,6 @@
             height: 100%;
         }
 
-        /* Hide Cesium Credit Branding for cleaner UI */
         .cesium-viewer-bottom {
             display: none !important;
         }
@@ -292,16 +292,16 @@
     <!-- TOP NAVIGATION BAR -->
     <nav>
         <div class="logo">
-            <i class="fa-solid fa-earth-africa"></i>
-            <span>Mahmoud Tarek</span>
+            <i class="fa-solid fa-globe"></i>
+            <span>GeoVision</span>
         </div>
         <ul class="nav-links">
             <li><a class="nav-item active" onclick="switchTab('home-view', this)">Home</a></li>
             <li><a class="nav-item" onclick="switchTab('globe-view', this)">Geospatial Study Sites</a></li>
-            <li><a class="nav-item" onclick="switchTab('research-view', this)">الأبحاث والمؤلفات</a></li>
-            <li><a class="nav-item" onclick="switchTab('books-view', this)">الكتب</a></li>
+            <li><a class="nav-item" onclick="switchTab('research-view', this)">Research & Publications</a></li>
+            <li><a class="nav-item" onclick="switchTab('books-view', this)">Library</a></li>
             <li><a class="nav-item" id="data-nav-link" style="display: none;" onclick="switchTab('data-view', this)">Data</a></li>
-            <li><a class="nav-item" onclick="switchTab('contact-view', this)">التواصل</a></li>
+            <li><a class="nav-item" onclick="switchTab('contact-view', this)">Contact</a></li>
         </ul>
     </nav>
 
@@ -311,19 +311,19 @@
             <div style="font-size: 2.5rem; color: var(--accent-gold); margin-bottom: 0.5rem;">
                 <i class="fa-solid fa-user-lock"></i>
             </div>
-            <h2 style="margin-bottom: 0.5rem;">تسجيل الدخول</h2>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">سجل الدخول للوصول الحصري لتبويب البيانات الجغرافية (Data)</p>
+            <h2 style="margin-bottom: 0.5rem;">Member Portal</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">Sign in to access protected spatial datasets and GIS resources</p>
             
             <form onsubmit="handleAuth(event)">
                 <div class="form-group">
-                    <label>البريد الإلكتروني / اسم المستخدم</label>
-                    <input type="email" id="auth-email" class="form-control" placeholder="Houda_Geosss12@gmail.com" required>
+                    <label>Email Address</label>
+                    <input type="email" id="auth-email" class="form-control" placeholder="name@example.com" required>
                 </div>
                 <div class="form-group">
-                    <label>كلمة السر</label>
+                    <label>Password</label>
                     <input type="password" id="auth-pass" class="form-control" placeholder="••••••••" required>
                 </div>
-                <button type="submit" class="btn btn-gold">تسجيل الدخول</button>
+                <button type="submit" class="btn btn-gold">Sign In</button>
             </form>
         </div>
     </section>
@@ -336,25 +336,25 @@
     <!-- 3. RESEARCH VIEW -->
     <section id="research-view" class="page-view">
         <div class="container">
-            <h1 class="page-title">الأبحاث والمؤلفات العلمية</h1>
-            <p class="page-subtitle">استعراض الدراسات الجغرافية وأوراق العمل المحكّمة</p>
+            <h1 class="page-title">Research & Publications</h1>
+            <p class="page-subtitle">Exploring spatial analysis, remote sensing, and hydrological modeling studies</p>
             
             <div class="grid">
                 <div class="card">
                     <div>
                         <span style="color: var(--accent-gold); font-size: 0.8rem; font-weight:700;">GIS & Hydrological Modeling</span>
-                        <h3 style="margin: 0.5rem 0;">نمذجة الملاءمة المكانية لسدود الأودية الجافة</h3>
-                        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6;">دراسة معالجة حوض الصرف وتحديد أفضل المواقع الهيدرولوجية باستخدام ArcGIS Pro.</p>
+                        <h3 style="margin: 0.5rem 0;">Dam Suitability Analysis for Dry Valleys</h3>
+                        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6;">Watershed processing and hydrological suitability modeling using ArcGIS Pro ModelBuilder.</p>
                     </div>
-                    <button class="btn btn-gold" style="margin-top: 1rem;">تحميل البحث (PDF)</button>
+                    <button class="btn btn-gold" style="margin-top: 1rem;">Download Paper (PDF)</button>
                 </div>
                 <div class="card">
                     <div>
                         <span style="color: var(--accent-blue); font-size: 0.8rem; font-weight:700;">Remote Sensing & GEE</span>
-                        <h3 style="margin: 0.5rem 0;">تصنيف المحاصيل الزراعية باستخدام Sentinel-1</h3>
-                        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6;">استخدام الرادار والتعلم الآلي عبر منصة Google Earth Engine لتصنيف الغطاء النباتي.</p>
+                        <h3 style="margin: 0.5rem 0;">Crop Classification via Sentinel-1 SAR</h3>
+                        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6;">Machine learning-based agricultural mapping using multi-temporal SAR imagery in Google Earth Engine.</p>
                     </div>
-                    <button class="btn btn-gold" style="margin-top: 1rem;">تحميل البحث (PDF)</button>
+                    <button class="btn btn-gold" style="margin-top: 1rem;">Download Paper (PDF)</button>
                 </div>
             </div>
         </div>
@@ -363,33 +363,33 @@
     <!-- 4. BOOKS VIEW -->
     <section id="books-view" class="page-view">
         <div class="container">
-            <h1 class="page-title">مكتبة الكتب العلمية</h1>
-            <p class="page-subtitle">مجموعة من الكتب والمراجع لمختلف العلماء والباحثين في الجغرافيا والتقنيات المكانية</p>
+            <h1 class="page-title">Geospatial Digital Library</h1>
+            <p class="page-subtitle">A curated collection of academic textbooks, references, and research resources</p>
 
             <div class="upload-section">
                 <i class="fa-solid fa-file-circle-plus" style="font-size: 2.5rem; color: var(--accent-gold); margin-bottom: 0.8rem;"></i>
-                <h3 style="margin-bottom: 0.5rem;">هل تريد مشاركة كتاب أو بحث علمي؟</h3>
-                <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.2rem;">يمكنك رفع الملفات بصيغة PDF مباشرة ليتم مراجعتها وإضافتها للمنصة</p>
-                <input type="file" id="userBookFile" accept=".pdf,.epub,.zip" style="display: none;" onchange="alert('تم استلام ملفك بنجاح وسوف يتم مراجعته لرفعه على المنصة. شكراً لمشاركتك!')">
+                <h3 style="margin-bottom: 0.5rem;">Would you like to contribute a book or paper?</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.2rem;">Upload PDF documents to be reviewed and added to the platform library</p>
+                <input type="file" id="userBookFile" accept=".pdf,.epub,.zip" style="display: none;" onchange="alert('File uploaded successfully! It will be reviewed before publication.')">
                 <button class="btn btn-gold" style="width: auto; padding: 10px 25px;" onclick="document.getElementById('userBookFile').click()">
-                    <i class="fa-solid fa-upload"></i> رفع ملف / كتاب جديد
+                    <i class="fa-solid fa-upload"></i> Upload Resource
                 </button>
             </div>
 
             <div class="grid">
                 <div class="card">
                     <div>
-                        <h3 style="margin-bottom: 0.5rem; color: var(--accent-gold);"><i class="fa-solid fa-book"></i> أساسيات نظم المعلومات الجغرافية</h3>
-                        <p style="color: var(--text-muted); font-size: 0.85rem;">مرجع شامل يفصل أسس التحليل المكاني، إدخال البيانات، وبناء قواعد البيانات الجغرافية.</p>
+                        <h3 style="margin-bottom: 0.5rem; color: var(--accent-gold);"><i class="fa-solid fa-book"></i> Fundamentals of GIS</h3>
+                        <p style="color: var(--text-muted); font-size: 0.85rem;">Comprehensive guide covering spatial analysis principles, raster processing, and database architecture.</p>
                     </div>
-                    <button class="btn btn-gold" style="margin-top: 1rem;">قراءة / تنزيل</button>
+                    <button class="btn btn-gold" style="margin-top: 1rem;">Read / Download</button>
                 </div>
                 <div class="card">
                     <div>
-                        <h3 style="margin-bottom: 0.5rem; color: var(--accent-blue);"><i class="fa-solid fa-book"></i> الاستشعار عن بعد والمعالجة الرقمية</h3>
-                        <p style="color: var(--text-muted); font-size: 0.85rem;">كتاب متخصص في تحليل الصور الفضائية واستخراج الأدلة الطيفية مع التطبيقات العملية.</p>
+                        <h3 style="margin-bottom: 0.5rem; color: var(--accent-blue);"><i class="fa-solid fa-book"></i> Remote Sensing & Digital Processing</h3>
+                        <p style="color: var(--text-muted); font-size: 0.85rem;">Advanced methods for satellite imagery analysis, spectral indices, and radar processing applications.</p>
                     </div>
-                    <button class="btn btn-gold" style="margin-top: 1rem;">قراءة / تنزيل</button>
+                    <button class="btn btn-gold" style="margin-top: 1rem;">Read / Download</button>
                 </div>
             </div>
         </div>
@@ -398,19 +398,19 @@
     <!-- 5. PROTECTED DATA VIEW -->
     <section id="data-view" class="page-view">
         <div class="container">
-            <h1 class="page-title" style="color: var(--accent-gold);"><i class="fa-solid fa-database"></i> البيانات الجغرافية الخاصّة (Data)</h1>
-            <p class="page-subtitle">مرحباً بك! هذه الصفحة مخصصة فقط للحسابات المعتمدة لتنزيل الـ GeoDatabase والـ Shapefiles</p>
+            <h1 class="page-title" style="color: var(--accent-gold);"><i class="fa-solid fa-database"></i> Protected Spatial Data</h1>
+            <p class="page-subtitle">Welcome! Authorized access granted for downloading Geodatabases and Shapefiles</p>
 
             <div class="grid">
                 <div class="card" style="border-color: var(--accent-gold);">
-                    <h3><i class="fa-solid fa-folder-zip" style="color: var(--accent-gold);"></i> GeoDatabase كامل المحافظات</h3>
-                    <p style="color: var(--text-muted); font-size: 0.88rem; margin: 0.8rem 0;">قاعدة بيانات جغرافية متكاملة تحتوي على الطبقات الخطية والشبكات الهيدرولوجية.</p>
-                    <a href="#" class="btn btn-gold" style="text-decoration:none; text-align:center;">تحميل GDB (ZIP)</a>
+                    <h3><i class="fa-solid fa-folder-zip" style="color: var(--accent-gold);"></i> National Geodatabase (GDB)</h3>
+                    <p style="color: var(--text-muted); font-size: 0.88rem; margin: 0.8rem 0;">Integrated spatial database containing vector layers and hydrological networks.</p>
+                    <a href="#" class="btn btn-gold" style="text-decoration:none; text-align:center;">Download GDB (ZIP)</a>
                 </div>
                 <div class="card" style="border-color: var(--accent-blue);">
-                    <h3><i class="fa-solid fa-layer-group" style="color: var(--accent-blue);"></i> Shapefiles أحواض الصرف</h3>
-                    <p style="color: var(--text-muted); font-size: 0.88rem; margin: 0.8rem 0;">ملفات شيب فايل جاهزة للاستخدام في برامج ArcGIS Pro و QGIS.</p>
-                    <a href="#" class="btn btn-gold" style="text-decoration:none; text-align:center;">تحميل Shapefiles</a>
+                    <h3><i class="fa-solid fa-layer-group" style="color: var(--accent-blue);"></i> Watershed Shapefiles</h3>
+                    <p style="color: var(--text-muted); font-size: 0.88rem; margin: 0.8rem 0;">Ready-to-use shapefiles optimized for ArcGIS Pro and QGIS analytical workflows.</p>
+                    <a href="#" class="btn btn-gold" style="text-decoration:none; text-align:center;">Download Shapefiles</a>
                 </div>
             </div>
         </div>
@@ -419,8 +419,8 @@
     <!-- 6. CONTACT VIEW -->
     <section id="contact-view" class="page-view">
         <div class="container" style="text-align: center;">
-            <h1 class="page-title">التواصل معي</h1>
-            <p class="page-subtitle">يمكنك التواصل المباشر معي عبر المنصات التالية:</p>
+            <h1 class="page-title">Connect With Me</h1>
+            <p class="page-subtitle">Feel free to reach out directly via professional networks:</p>
 
             <div class="contact-container">
                 <a href="#" target="_blank" class="contact-card">
@@ -460,12 +460,12 @@
             const ALLOWED_PASS = "0215fds4sf984ef#&sdfs5df";
 
             if (emailInput === ALLOWED_EMAIL && passInput === ALLOWED_PASS) {
-                alert("تم تسجيل الدخول بنجاح! تم فتح تبويب البيانات (Data).");
+                alert("Access granted! The protected 'Data' tab is now unlocked.");
                 const dataTab = document.getElementById('data-nav-link');
                 dataTab.style.display = 'inline-block';
                 switchTab('data-view', dataTab);
             } else {
-                alert("فشل تسجيل الدخول! البريد الإلكتروني أو كلمة السر غير صحيحة. يرجى التواصل مع الطالب محمود للحصول على صلاحية الدخول.");
+                alert("Authentication failed! Invalid email or password. Please request authorized credentials.");
             }
         }
 
@@ -491,9 +491,9 @@
             scene.globe.enableLighting = true;
 
             const studyPoints = [
-                { lat: 30.0444, lon: 31.2357, name: 'القاهرة - دراسة الهيدرولوجيا' },
-                { lat: 28.5306, lon: 33.9344, name: 'جنوب سيناء - شبكات الصرف' },
-                { lat: 31.2001, lon: 29.9187, name: 'الدلتا - تصنيف المحاصيل' }
+                { lat: 30.0444, lon: 31.2357, name: 'Cairo - Hydrological Study' },
+                { lat: 28.5306, lon: 33.9344, name: 'South Sinai - Drainage Network' },
+                { lat: 31.2001, lon: 29.9187, name: 'Delta - Crop Classification' }
             ];
 
             studyPoints.forEach(pt => {
@@ -508,7 +508,7 @@
                     },
                     label: {
                         text: pt.name,
-                        font: '14px Cairo, sans-serif',
+                        font: '13px Inter, sans-serif',
                         style: Cesium.LabelStyle.FILL_AND_OUTLINE,
                         outlineWidth: 2,
                         verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
