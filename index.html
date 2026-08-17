@@ -1,39 +1,768 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GeoVision | Geospatial & Academic Platform</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>المنصة الجغرافية التفاعلية & GeoAI</title>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <style>
+    :root {
+      --primary-color: #2c3e50;
+      --accent-color: #27ae60;
+      --bg-color: #f8f9fa;
+    }
 
-    <!-- CesiumJS Engine for Earth & High-Res Zoom Satellite Imagery -->
-    <script src="https://cesium.com/downloads/cesiumjs/releases/1.115/Cesium/Cesium.js"></script>
-    <link href="https://cesium.com/downloads/cesiumjs/releases/1.115/Cesium/Widgets/widgets.css" rel="stylesheet">
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-color);
+      direction: rtl;
+    }
 
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    /* شريط التنقل العلوي - مخفي افتراضياً قبل تسجيل الدخول */
+    nav {
+      background: var(--primary-color);
+      padding: 12px 20px;
+      display: none; /* ينكشف بعد تسجيل الدخول */
+      gap: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    }
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    nav button {
+      background: #34495e;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 6px;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
 
-    <style>
-        :root {
-            --bg-dark: #030712;
-            --card-bg: rgba(17, 24, 39, 0.85);
-            --accent-gold: #d4af37;
-            --accent-blue: #38bdf8;
-            --text-main: #f9fafb;
-            --text-muted: #9ca3af;
-            --border-color: rgba(255, 255, 255, 0.1);
+    nav button:hover {
+      background: #455a64;
+    }
+
+    nav button.active {
+      background: var(--accent-color);
+    }
+
+    /* حاويات الصفحات/التبويبات */
+    .tab-content {
+      display: none;
+      padding: 25px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* صفحة المصادقة والحسابات */
+    .auth-container {
+      max-width: 400px;
+      margin: 60px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+
+    .auth-container input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0 16px 0;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .auth-toggle-link {
+      margin-top: 15px;
+      display: block;
+      color: #2980b9;
+      cursor: pointer;
+      font-size: 14px;
+      text-decoration: underline;
+    }
+
+    /* الخريطة التفاعلية */
+    #map {
+      width: 100%;
+      height: 600px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    /* قسم الذكاء الاصطناعي الجغرافي GeoAI */
+    .ai-box {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    .ai-controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .ai-controls select {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    .ai-textarea {
+      width: 100%;
+      height: 120px;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-sizing: border-box;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    .ai-response {
+      margin-top: 20px;
+      padding: 18px;
+      background: #f1f8e9;
+      border-right: 5px solid var(--accent-color);
+      border-radius: 6px;
+      min-height: 80px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- شريط التبويبات العلوي (يتم إظهاره فور التسجيل) -->
+  <nav id="mainNav">
+    <button onclick="switchTab('map-tab')" id="btn-map" class="active">🗺️ الخريطة التفاعلية</button>
+    <button onclick="switchTab('geoai-tab')" id="btn-geoai">🤖 المساعد الجغرافي الذكي (GeoAI)</button>
+    <button onclick="logout()" style="margin-right: auto; background: #e74c3c;">تسجيل الخروج</button>
+  </nav>
+
+  <!-- 1. صفحة الدخول / إنشاء حساب (تظهر أولاً فقط) -->
+  <div id="auth-tab" class="tab-content active">
+    <div class="auth-container" id="loginForm">
+      <h2>تسجيل الدخول</h2>
+      <input type="email" id="loginEmail" placeholder="البريد الإلكتروني">
+      <input type="password" id="loginPass" placeholder="كلمة المرور">
+      <button class="btn-submit" onclick="grantAccess()">دخول المنصة</button>
+      <span class="auth-toggle-link" onclick="toggleAuthMode('signup')">ليس لدي حساب؟ إنشاء حساب جديد</span>
+    </div>
+
+    <div class="auth-container" id="signupForm" style="display: none;">
+      <h2>إنشاء حساب جديد</h2>
+      <input type="text" id="signupName" placeholder="الاسم الكامل">
+      <input type="email" id="signupEmail" placeholder="البريد الإلكتروني">
+      <input type="password" id="signupPass" placeholder="كلمة المرور">
+      <button class="btn-submit" onclick="grantAccess()">تسجيل الحساب وتمرير الدخول</button>
+      <span class="auth-toggle-link" onclick="toggleAuthMode('login')">لديك حساب بالفعل؟ تسجيل الدخول</span>
+    </div>
+  </div>
+
+  <!-- 2. صفحة الخريطة التفاعلية -->
+  <div id="map-tab" class="tab-content">
+    <h2>الخريطة المكانية التفاعلية</h2>
+    <p>يمكنك التبديل بين الخريطة المفتوحة وصور الأقمار الصناعية عالية الدقة من أداة الطبقات على اليمين:</p>
+    <div id="map"></div>
+  </div>
+
+  <!-- 3. صفحة الذكاء الاصطناعي الجغرافي (GeoAI) -->
+  <div id="geoai-tab" class="tab-content">
+    <div class="ai-box">
+      <h2>🤖 المساعد الجغرافي الجيومكاني الذكي (GeoAI)</h2>
+      <p>اختر نوع المهمة المطلوبة (شرح، تلخيص، أو إعداد بحث جغرافي أوتوماتيكي):</p>
+      
+      <div class="ai-controls">
+        <select id="aiTask">
+          <option value="explain">💡 شرح مفهوم جغرافي/استشعار عن بعد</option>
+          <option value="summarize">📄 تلخيص ورق بحثية أو دراسة مكانية</option>
+          <option value="research">📚 إعداد بحث جغرافي هيدرولوجي/مكاني متكامل</option>
+        </select>
+      </div>
+
+      <textarea id="aiPrompt" class="ai-textarea" placeholder="اكتب سؤالك، النص المراد تلخيصه، أو عنوان البحث الجغرافي هنا..."></textarea>
+      <button class="btn-submit" style="margin-top: 10px;" onclick="runGeoAI()">تشغيل الذكاء الاصطناعي</button>
+
+      <h3>نتيجة المعالجة الجغرافية:</h3>
+      <div id="aiOutput" class="ai-response">بانتظار إدخال الاستفسار لتوليد الشرح أو البحث...</div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    let map = null;
+
+    // التنقل بين واجهات الدخول وإنشاء الحساب
+    function toggleAuthMode(mode) {
+      if (mode === 'signup') {
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('signupForm').style.display = 'block';
+      } else {
+        document.getElementById('signupForm').style.display = 'none';
+        document.getElementById('loginForm').style.display = 'block';
+      }
+    }
+
+    // السماح بالدخول وإظهار التبويبات بالكامل
+    function grantAccess() {
+      // إخفاء واجهات الدخول/التسجيل
+      document.getElementById('auth-tab').classList.remove('active');
+      
+      // إظهار شريط التبويبات العلوي
+      document.getElementById('mainNav').style.display = 'flex';
+
+      // فتح تبويب الخريطة مباشرة
+      switchTab('map-tab');
+    }
+
+    // تسجيل الخروج وإعادة الإخفاء
+    function logout() {
+      document.getElementById('mainNav').style.display = 'none';
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.getElementById('auth-tab').classList.add('active');
+    }
+
+    // التنقل بين التبويبات الرئيسية
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
+
+      document.getElementById(tabId).classList.add('active');
+      
+      const btn = document.getElementById('btn-' + tabId.replace('-tab', ''));
+      if (btn) btn.classList.add('active');
+
+      // تهيئة وتحديث الخريطة عند فتح تبويب الخريطة
+      if (tabId === 'map-tab') {
+        initMap();
+        setTimeout(() => {
+          if (map) map.invalidateSize();
+        }, 200);
+      }
+    }
+
+    // تهيئة الخريطة بفرعَي OpenStreetMap و Satellite Imagery
+    function initMap() {
+      if (map !== null) return;
+
+      // 1. OpenStreetMap
+      const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+      });
+
+      // 2. Esri Satellite Imagery
+      const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS'
+      });
+
+      map = L.map('map', {
+        center: [30.0444, 31.2357], // مصر/القاهرة كموقع افتراضي
+        zoom: 6,
+        layers: [osmLayer]
+      });
+
+      const baseMaps = {
+        "خريطة الشارع المفتوحة (OpenStreetMap)": osmLayer,
+        "صور الأقمار الصناعية (Esri Imagery)": satelliteLayer
+      };
+
+      L.control.layers(baseMaps).addTo(map);
+    }
+
+    // محاكاة معالج الذكاء الاصطناعي الجغرافي المكاني (GeoAI Engine)
+    function runGeoAI() {
+      const task = document.getElementById('aiTask').value;
+      const prompt = document.getElementById('aiPrompt').value.trim();
+      const outputBox = document.getElementById('aiOutput');
+
+      if (!prompt) {
+        outputBox.innerText = "⚠️ يرجى كتابة السؤال أو الموضوع المطلوب في الخانة أعلاه أولاً.";
+        return;
+      }
+
+      outputBox.innerText = "⏳ جاري تحليل البيانات المكانية واستخراج النتائج عبر النماذج الجغرافية...";
+
+      setTimeout(() => {
+        if (task === 'explain') {
+          outputBox.innerText = `💡 [شرح جغرافي مكاني للمفهوم: "${prompt}"]:\n\nعلشان نعمل الربط الكامل بين الصفحات بحيث بعد تسجيل الدخول (أو فتح الحساب الجديد) تظهر باقي التبويبات والمميزات بشكل ديناميكي، مع إضافة **مساعد ذكاء اصطناعي جغرافي وجيومكاني (Geospatial AI Assistant)**، هنقسم الحل لكود عملي ومنظم.
+
+الذكاء الاصطناعي الجيومكاني المدمج سيكون مصمماً خصيصاً للشرح، التلخيص، ومساعدة الباحثين في إعداد الأبحاث الجغرافية وتحليل البيانات المكانية.
+
+---
+
+## 1. هليلة تنقل الصفحات (Navigation & Authentication Rules)
+
+هنستخدم **JavaScript** بسيط لإدارة ظهور وإخفاء الصفحات والتبويبات (Navigation Tabs) بناءً على حالة المستخدم:
+
+* **قبل تسجيل الدخول:** يظهر فقط تبويب (تسجيل الدخول / إنشاء حساب).
+* **بعد تسجيل الدخول (أو الضغط على "ليس لدي حساب / تسجيل"):** 
+  * يتم حفظ جلسة المستخدم تلقائياً (`loggedIn = true`).
+  * تظهر باقي التبويبات المتقدمة (الكتب والخرائط، المساعد الجغرافي AI، أداة كتابة الأبحاث).
+  * الانتقال التلقائي للصفحة الرئيسية للمنصة.
+
+---
+
+## 2. الكود الكامل (HTML + CSS + JavaScript)
+
+يمكنك إضافة هذا الكود إلى مشروعك بشكل مباشر أو تعديله حسب هياكل أسطر الكود لديك:
+
+```html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>المنصة الجغرافية والجيومكانية</title>
+  <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css)">
+  <style>
+    :root {
+      --primary-color: #1b4332;
+      --secondary-color: #2d6a4f;
+      --accent-color: #52b788;
+      --bg-color: #f8f9fa;
+      --text-color: #2b2b2b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-color); }
+
+    /* هيدر التبويبات (Navigation Bar) */
+    header {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .logo { font-size: 1.4rem; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+    
+    nav ul { display: flex; list-style: none; gap: 15px; }
+    nav ul li button {
+      background: none;
+      border: none;
+      color: #d8f3dc;
+      padding: 8px 16px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    nav ul li button:hover, nav ul li button.active {
+      background-color: var(--secondary-color);
+      color: #white;
+    }
+
+    /* شريط المستخدم */
+    .user-profile-badge {
+      display: none; /* يظهر بعد تسجيل الدخول */
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.1);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+    }
+
+    /* إخفاء الصفحات غير النشطة */
+    .page-section { display: none; padding: 2rem; max-width: 1200px; margin: auto; }
+    .page-section.active { display: block; animation: fadeIn 0.4s ease-in-out; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* تصميم نموذج الدخول */
+    .auth-card {
+      max-width: 420px;
+      margin: 4rem auto;
+      background: white;
+      padding: 2.5rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+
+    .auth-card h2 { color: var(--primary-color); margin-bottom: 1.5rem; }
+    .input-group { margin-bottom: 1.2rem; text-align: right; }
+    .input-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; }
+    .input-group input {
+      width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; outline: none;
+    }
+
+    .btn-submit {
+      width: 100%; padding: 12px; background: var(--secondary-color); color: white;
+      border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s;
+    }
+
+    .btn-submit:hover { background: var(--primary-color); }
+
+    .switch-link { margin-top: 1rem; font-size: 0.85rem; color: #555; }
+    .switch-link a { color: var(--secondary-color); font-weight: bold; cursor: pointer; text-decoration: underline; }
+
+    /* تصميم المساعد الذكي AI */
+    .ai-container {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      height: 75vh;
+      overflow: hidden;
+    }
+
+    .ai-sidebar {
+      background: #f1f5f9;
+      padding: 1.5rem;
+      border-left: 1px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .ai-mode-btn {
+      width: 100%;
+      padding: 12px;
+      text-align: right;
+      background: white;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: 0.2s;
+    }
+
+    .ai-mode-btn.active, .ai-mode-btn:hover {
+      background: var(--secondary-color);
+      color: white;
+      border-color: var(--secondary-color);
+    }
+
+    .ai-chat-area {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 1.5rem;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .message {
+      padding: 12px 16px;
+      border-radius: 8px;
+      max-width: 80%;
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+
+    .message.user { background: #e2e8f0; align-self: flex-start; }
+    .message.ai { background: #d8f3dc; color: #081c15; align-self: flex-end; border-right: 4px solid var(--secondary-color); }
+
+    .chat-input-box {
+      display: flex;
+      gap: 10px;
+      background: #f8f9fa;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .chat-input-box textarea {
+      flex: 1; border: none; background: transparent; outline: none; resize: none; height: 45px; padding: 8px;
+    }
+
+    .chat-input-box button {
+      background: var(--secondary-color); color: white; border: none; padding: 0 20px; border-radius: 6px; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- الهيدر والتبويبات -->
+  <header>
+    <div class="logo">
+      <i class="fa-solid fa-earth-americas"></i> GeoSpace Hub
+    </div>
+    <nav>
+      <ul>
+        <!-- تبويب تسجيل الدخول يختفي بعد الدخول -->
+        <li id="nav-auth-item">
+          <button id="btn-tab-auth" class="active" onclick="switchTab('auth')">
+            <i class="fa-solid fa-right-to-bracket"></i> تسجيل الدخول
+          </button>
+        </li>
+        
+        <!-- التبويبات التالية تكون مخفية حتى يتم تسجيل الدخول -->
+        <li class="protected-tab" style="display: none;">
+          <button id="btn-tab-home" onclick="switchTab('home')">
+            <i class="fa-solid fa-house"></i> الرئيسية
+          </button>
+        </li>
+        <li class="protected-tab" style="display: none;">
+          <button id="btn-tab-books" onclick="switchTab('books')">
+            <i class="fa-solid fa-book-atlas"></i> المكتبة المكانية
+          </button>
+        </li>
+        <li class="protected-tab" style="display: none;">
+          <button id="btn-tab-ai" onclick="switchTab('ai')">
+            <i class="fa-solid fa-robot"></i> Geo-AI الذكاء الجغرافي
+          </button>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- شريط معلومات الحساب ومسح الجلسة -->
+    <div class="user-profile-badge" id="user-badge">
+      <i class="fa-solid fa-user-circle fa-lg"></i>
+      <span id="user-display-name">باحث جغرافي</span>
+      <i class="fa-solid fa-sign-out-alt" style="margin-right: 8px; cursor: pointer;" title="تسجيل الخروج" onclick="logout()"></i>
+    </div>
+  </header>
+
+  <!-- Content Sections -->
+  <main>
+
+    <!-- 1. صفحة التسجيل/إنشاء حساب -->
+    <section id="page-auth" class="page-section active">
+      <div class="auth-card" id="login-box">
+        <h2>تسجيل الدخول</h2>
+        <div class="input-group">
+          <label>البريد الإلكتروني / اسم الباحث</label>
+          <input type="text" id="login-username" placeholder="مثال: Mahmoud">
+        </div>
+        <div class="input-group">
+          <label>كلمة المرور</label>
+          <input type="password" placeholder="••••••••">
+        </div>
+        <button class="btn-submit" onclick="handleAuth(true)">دخول Platform</button>
+        <div class="switch-link">
+          ليس لديك حساب؟ <a onclick="toggleAuthMode('register')">أنشئ حساباً جديداً الآن</a>
+        </div>
+      </div>
+
+      <div class="auth-card" id="register-box" style="display: none;">
+        <h2>إنشاء حساب جغرافي جديد</h2>
+        <div class="input-group">
+          <label>الاسم الكامل</label>
+          <input type="text" id="reg-username" placeholder="الاسم والتخصص">
+        </div>
+        <div class="input-group">
+          <label>التخصص الجغرافي</label>
+          <input type="text" placeholder="GIS / Remote Sensing / Geography">
+        </div>
+        <div class="input-group">
+          <label>كلمة المرور</label>
+          <input type="password" placeholder="••••••••">
+        </div>
+        <button class="btn-submit" onclick="handleAuth(false)">تسجيل واشتراك</button>
+        <div class="switch-link">
+          لديك حساب بالفعل؟ <a onclick="toggleAuthMode('login')">تسجيل الدخول</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. الصفحة الرئيسية (تفتح بعد الدخول) -->
+    <section id="page-home" class="page-section">
+      <h2>مرحباً بك في المنصة الجغرافية والجيومكانية</h2>
+      <p style="margin-top: 10px; color: #555;">يمكنك الآن التصفح بين الكتب والمجموعات الخرائطية أو استخدام المساعد الجغرافي AI.</p>
+    </section>
+
+    <!-- 3. صفحة المكتبة والكتب -->
+    <section id="page-books" class="page-section">
+      <h2>المكتبة الجغرافية والخرائط المدمجة</h2>
+      <p style="margin-top: 10px;">هنا يمكنك استعراض المراجع والأبحاث والطبقات المكانية...</p>
+    </section>
+
+    <!-- 4. صفحة الذكاء الاصطناعي الجغرافي والجيومكاني (Geo-AI) -->
+    <section id="page-ai" class="page-section">
+      <div style="margin-bottom: 15px;">
+        <h2><i class="fa-solid fa-microchip"></i> Geo-AI Assistant (المساعد الجيومكاني الذكي)</h2>
+        <p style="font-size: 0.9rem; color: #666;">مساعد متخصص في الاستشعار عن بعد، نظم المعلومات الجغرافية (GIS)، وتلخيص الأبحاث المكانية.</p>
+      </div>
+
+      <div class="ai-container">
+        <!-- القائمة الجانبية لوظائف الذكاء الاصطناعي -->
+        <div class="ai-sidebar">
+          <button class="ai-mode-btn active" onclick="setAIMode('explain')">
+            <i class="fa-solid fa-chalkboard-user"></i> شرح المفاهيم المكانية
+          </button>
+          <button class="ai-mode-btn" onclick="setAIMode('summarize')">
+            <i class="fa-solid fa-file-contract"></i> تلخيص الأبحاث والكتب
+          </button>
+          <button class="ai-mode-btn" onclick="setAIMode('research')">
+            <i class="fa-solid fa-pen-nib"></i> مساعدة في كتابة الأبحاث
+          </button>
+          <button class="ai-mode-btn" onclick="setAIMode('gis-code')">
+            <i class="fa-solid fa-code"></i> أكواد Python / GEE
+          </button>
+        </div>
+
+        <!-- منطقة المحادثة -->
+        <div class="ai-chat-area">
+          <div class="chat-messages" id="chat-messages">
+            <div class="message ai">
+              مرحباً بك! أنا مساعدك الجيومكاني الذكي. اختر المهمة من القائمة الجانبية، أو اكتب استفسارك مباشرة (مثل: شرح مؤشر NDVI، تلخيص بحث عن الفيضانات، أو المساعدة في صياغة مشكلة الدراسة).
+            </div>
+          </div>
+
+          <div class="chat-input-box">
+            <textarea id="ai-user-input" placeholder="اكتب سؤالك الجغرافي هنا..."></textarea>
+            <button onclick="sendAIMessage()"><i class="fa-solid fa-paper-plane"></i> إرسال</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    let currentAIMode = 'explain';
+
+    // 1. التبديل بين نماذج التسجيل وإنشاء الحساب
+    function toggleAuthMode(mode) {
+      if(mode === 'register') {
+        document.getElementById('login-box').style.display = 'none';
+        document.getElementById('register-box').style.display = 'block';
+      } else {
+        document.getElementById('register-box').style.display = 'none';
+        document.getElementById('login-box').style.display = 'block';
+      }
+    }
+
+    // 2. معالجة عملية تسجيل الدخول أو إنشاء حساب
+    function handleAuth(isLogin) {
+      let name = isLogin ? document.getElementById('login-username').value : document.getElementById('reg-username').value;
+      if(!name) name = "باحث جغرافي";
+
+      // حفظ الاسم وإظهار عناصر التصفح
+      document.getElementById('user-display-name').innerText = name;
+      document.getElementById('user-badge').style.display = 'flex';
+      document.getElementById('nav-auth-item').style.display = 'none';
+
+      // إظهار كافة التبويبات المحمية
+      document.querySelectorAll('.protected-tab').forEach(el => el.style.display = 'block');
+
+      // الانتقال للصفحة الرئيسية تلقائياً
+      switchTab('home');
+    }
+
+    // 3. الخروج
+    function logout() {
+      document.getElementById('user-badge').style.display = 'none';
+      document.getElementById('nav-auth-item').style.display = 'block';
+      document.querySelectorAll('.protected-tab').forEach(el => el.style.display = 'none');
+      switchTab('auth');
+    }
+
+    // 4. التبديل بين التبويبات/الصفحات
+    function switchTab(tabId) {
+      // إخفاء كل الصفحات
+      document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+      // إلغاء تفعيل كل الأزرار
+      document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
+
+      // تفعيل الصفحة المطلوبة
+      document.getElementById('page-' + tabId).classList.add('active');
+      
+      const activeBtn = document.getElementById('btn-tab-' + tabId);
+      if(activeBtn) activeBtn.classList.add('active');
+    }
+
+    // 5. التحكم في أوضاع الذكاء الاصطناعي
+    function setAIMode(mode) {
+      currentAIMode = mode;
+      document.querySelectorAll('.ai-mode-btn').forEach(btn => btn.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+    }
+
+    // 6. إرسال المحادثة إلى الذكاء الاصطناعي الجغرافي
+    function sendAIMessage() {
+      const input = document.getElementById('ai-user-input');
+      const text = input.value.trim();
+      if(!text) return;
+
+      const chatContainer = document.getElementById('chat-messages');
+
+      // إضافة رسالة المستخدم
+      const userMsg = document.createElement('div');
+      userMsg.className = 'message user';
+      userMsg.innerText = text;
+      chatContainer.appendChild(userMsg);
+
+      input.value = '';
+
+      // محاكاة رد الذكاء الاصطناعي بناءً على الوضع المختار
+      setTimeout(() => {
+        const aiMsg = document.createElement('div');
+        aiMsg.className = 'message ai';
+
+        let response = "";
+        if(currentAIMode === 'explain') {
+          response = `[شرح مكاني]: بناءً على سؤالك حول "${text}": تعتبر هذه الظاهرة من العوامل الأساسية في التحليل المكاني، ويمكن إدخالها كطبقة Raster ضمن نموذج الملائمة (Suitability Model).`;
+        } else if(currentAIMode === 'summarize') {
+          response = `[تلخيص بحثي]: النقاط الرئيسية للنسخ المرفق:\n1. الهدف: دراسة التغير العمراني.\n2. المنهجية: استخدام مرئيات Sentinel-2 واستخراج مؤشر NDBI.\n3. النتيجة: نمو بنسبة 14% في المناطق الحضرية.`;
+        } else if(currentAIMode === 'research') {
+          response = `[إعداد الأبحاث]: يمكن صياغة مشكلة البحث كالتالي: "تكمن المشكلة في تقييم أثر التغيرات المكانية على... واستخدام تقنيات GIS للحد من المخاطر المكانية."`;
+        } else if(currentAIMode === 'gis-code') {
+          response = `[كود GEE/Python]:\nvar ndvi = image.normalizedDifference(['B8', 'B4']).rename('NDVI');\nMap.addLayer(ndvi, {min: 0, max: 1, palette: ['blue', 'white', 'green']}, 'NDVI Image');`;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-        }
+        aiMsg.innerText = response;
+        chatContainer.appendChild(aiMsg);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }, 800);
+    }
+  </script>
+</body>
+</html>
 
         body {
             background-color: var(--bg-dark);
