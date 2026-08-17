@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>المنصة الجغرافية والأكاديمية | Mahmoud Tarek</title>
 
-    <!-- Globe.gl & Three.js Libraries -->
-    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-    <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
+    <!-- CesiumJS Engine for Earth & High-Res Zoom Satellite Imagery -->
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.115/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.115/Cesium/Widgets/widgets.css" rel="stylesheet">
 
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -91,7 +91,7 @@
             background: rgba(212, 175, 55, 0.1);
         }
 
-        /* Page System (Independent Views) */
+        /* Page System */
         .page-view {
             display: none;
             height: calc(100vh - 70px);
@@ -115,7 +115,6 @@
             padding: 2.5rem 1.5rem;
         }
 
-        /* Section Titles */
         .page-title {
             font-size: 2rem;
             font-weight: 800;
@@ -202,7 +201,7 @@
             box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
         }
 
-        /* GLOBE VIEW */
+        /* GLOBE VIEW CONTAINER */
         #globe-view {
             position: relative;
             height: calc(100vh - 70px);
@@ -216,7 +215,12 @@
             height: 100%;
         }
 
-        /* CARDS GRID (Books & Research) */
+        /* Hide Cesium Credit Branding for cleaner UI */
+        .cesium-viewer-bottom {
+            display: none !important;
+        }
+
+        /* CARDS GRID */
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -281,7 +285,6 @@
         .linkedin-icon { color: #0a66c2; }
         .whatsapp-icon { color: #25d366; }
         .facebook-icon { color: #1877f2; }
-
     </style>
 </head>
 <body>
@@ -325,7 +328,7 @@
         </div>
     </section>
 
-    <!-- 2. GLOBE VIEW -->
+    <!-- 2. GLOBE VIEW (CESIUM SATELLITE GLOBE) -->
     <section id="globe-view" class="page-view">
         <div id="globeViz"></div>
     </section>
@@ -357,13 +360,12 @@
         </div>
     </section>
 
-    <!-- 4. BOOKS VIEW (NEW SECTION WITH UPLOAD) -->
+    <!-- 4. BOOKS VIEW -->
     <section id="books-view" class="page-view">
         <div class="container">
             <h1 class="page-title">مكتبة الكتب العلمية</h1>
             <p class="page-subtitle">مجموعة من الكتب والمراجع لمختلف العلماء والباحثين في الجغرافيا والتقنيات المكانية</p>
 
-            <!-- Upload Book/Paper Option -->
             <div class="upload-section">
                 <i class="fa-solid fa-file-circle-plus" style="font-size: 2.5rem; color: var(--accent-gold); margin-bottom: 0.8rem;"></i>
                 <h3 style="margin-bottom: 0.5rem;">هل تريد مشاركة كتاب أو بحث علمي؟</h3>
@@ -374,7 +376,6 @@
                 </button>
             </div>
 
-            <!-- Books Display Grid -->
             <div class="grid">
                 <div class="card">
                     <div>
@@ -394,7 +395,7 @@
         </div>
     </section>
 
-    <!-- 5. PROTECTED DATA VIEW (ACCESSIBLE ONLY AFTER LOGIN) -->
+    <!-- 5. PROTECTED DATA VIEW -->
     <section id="data-view" class="page-view">
         <div class="container">
             <h1 class="page-title" style="color: var(--accent-gold);"><i class="fa-solid fa-database"></i> البيانات الجغرافية الخاصّة (Data)</h1>
@@ -422,19 +423,14 @@
             <p class="page-subtitle">يمكنك التواصل المباشر معي عبر المنصات التالية:</p>
 
             <div class="contact-container">
-                <!-- ضف رابط الـ LinkedIn الخاص بك مكان العلامة # -->
                 <a href="#" target="_blank" class="contact-card">
                     <i class="fa-brands fa-linkedin linkedin-icon"></i>
                     <h4>LinkedIn</h4>
                 </a>
-
-                <!-- ضف رابط الواتساب الخاص بك مكان العلامة # -->
                 <a href="#" target="_blank" class="contact-card">
                     <i class="fa-brands fa-whatsapp whatsapp-icon"></i>
                     <h4>WhatsApp</h4>
                 </a>
-
-                <!-- ضف رابط الفيسبوك الخاص بك مكان العلامة # -->
                 <a href="#" target="_blank" class="contact-card">
                     <i class="fa-brands fa-facebook facebook-icon"></i>
                     <h4>Facebook</h4>
@@ -452,13 +448,6 @@
 
             document.getElementById(pageId).classList.add('active');
             if (element) element.classList.add('active');
-
-            // Render Globe properly if active
-            if (pageId === 'globe-view' && globeInstance) {
-                setTimeout(() => {
-                    globeInstance.width(window.innerWidth).height(window.innerHeight - 70);
-                }, 100);
-            }
         }
 
         // 2. Authentication Control System
@@ -480,30 +469,57 @@
             }
         }
 
-        // 3. Globe Initialization (High Quality 3D Earth)
-        let globeInstance;
+        // 3. Globe & High-Res Satellite Imagery Initialization (CesiumJS)
+        let viewer;
         window.addEventListener('DOMContentLoaded', () => {
+            viewer = new Cesium.Viewer('globeViz', {
+                imageryProvider: new Cesium.ArcGisMapServerImageryProvider({
+                    url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer'
+                }),
+                baseLayerPicker: false,
+                geocoder: true,
+                navigationHelpButton: false,
+                homeButton: true,
+                sceneModePicker: false,
+                animation: false,
+                timeline: false,
+                fullscreenButton: false
+            });
+
+            const scene = viewer.scene;
+            scene.skyAtmosphere.show = true;
+            scene.globe.enableLighting = true;
+
             const studyPoints = [
-                { lat: 30.0444, lng: 31.2357, title: 'القاهرة - دراسة الهيدرولوجيا' },
-                { lat: 28.5306, lng: 33.9344, title: 'جنوب سيناء - شبكات الصرف' },
-                { lat: 31.2001, lng: 29.9187, title: 'الدلتا - تصنيف المحاصيل' }
+                { lat: 30.0444, lon: 31.2357, name: 'القاهرة - دراسة الهيدرولوجيا' },
+                { lat: 28.5306, lon: 33.9344, name: 'جنوب سيناء - شبكات الصرف' },
+                { lat: 31.2001, lon: 29.9187, name: 'الدلتا - تصنيف المحاصيل' }
             ];
 
-            globeInstance = Globe()(document.getElementById('globeViz'))
-                .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-                .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
-                .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
-                .pointsData(studyPoints)
-                .pointLat('lat')
-                .pointLng('lng')
-                .pointColor(() => '#d4af37')
-                .pointAltitude(0.05)
-                .pointRadius(0.8)
-                .pointLabel('title');
+            studyPoints.forEach(pt => {
+                viewer.entities.add({
+                    name: pt.name,
+                    position: Cesium.Cartesian3.fromDegrees(pt.lon, pt.lat, 500),
+                    point: {
+                        pixelSize: 12,
+                        color: Cesium.Color.fromCssColorString('#d4af37'),
+                        outlineColor: Cesium.Color.BLACK,
+                        outlineWidth: 2
+                    },
+                    label: {
+                        text: pt.name,
+                        font: '14px Cairo, sans-serif',
+                        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                        outlineWidth: 2,
+                        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                        pixelOffset: new Cesium.Cartesian2(0, -9)
+                    }
+                });
+            });
 
-            globeInstance.controls().autoRotate = true;
-            globeInstance.controls().autoRotateSpeed = 0.7;
-            globeInstance.pointOfView({ lat: 26.0, lng: 30.0, altitude: 2.0 });
+            viewer.camera.setView({
+                destination: Cesium.Cartesian3.fromDegrees(30.0, 26.0, 15000000.0)
+            });
         });
     </script>
 </body>
